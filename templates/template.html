@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Just a robot</title>
+    <link rel="stylesheet" href="/static/template.css">
+</head>
+<body>
+    <h1>Welcome to my robot page!</h1>
+    <p id="coords">Current coordinates: ({{ i }}, {{ j }})</p>
+    <table id="button-grid">
+        <tbody>
+            <tr>
+                <td></td>
+                <td><form action="/up" method="post">
+                        <button type="submit" id="up">UP</button>
+                    </form>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><form action="/left" method="post">
+                        <button type="submit" id="left">LEFT</button>
+                    </form>
+                </td>
+                <td><form action="/reset" method="post">
+                        <button type="submit" id="reset">RESET</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="/right" method="post">
+                        <button type="submit" id="right">RIGHT</button>
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <form action="/down" method="post">
+                        <button type="submit" id="down">DOWN</button>
+                    </form>
+                </td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>Now you can also use the arrow keys (and backspace for reset)!<br>
+       You can also click directly on a grid cell to teleport to it!</p>
+
+</body>
+</html>

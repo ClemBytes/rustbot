@@ -1,11 +1,24 @@
 use std::sync::{Arc, Mutex};
 
-use axum::{Router, extract::State, routing::get};
+use askama::Template;
+use axum::{
+    Router,
+    extract::State,
+    response::{Html, IntoResponse},
+    routing::get,
+};
 use tower_http::services::ServeDir;
 
 #[derive(Clone)]
 struct Coordinates {
     coordinates: Arc<Mutex<(i32, i32)>>,
+}
+
+#[derive(Template)]
+#[template(path = "template.html")]
+struct MainTemplate {
+    i: i32,
+    j: i32,
 }
 
 #[tokio::main]
@@ -22,7 +35,7 @@ async fn main() {
         .route("/left", get(left).post(left))
         .route("/down", get(down).post(down))
         .route("/up", get(up).post(up))
-        .nest_service("static", ServeDir::new("rustbot/static"))
+        .nest_service("/static", ServeDir::new("rustbot/static"))
         .with_state(rustbot_coordinates);
 
     // run app with hyper, listening globally on port 3000
@@ -30,38 +43,44 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn root(State(state): State<Coordinates>) -> String {
+async fn root(State(state): State<Coordinates>) -> impl IntoResponse {
     let coords = state.coordinates.lock().unwrap();
-    format!("Rustbot coordinates: ({}, {})", coords.0, coords.1)
+    let html = MainTemplate { i: coords.0, j: coords.1 };
+    Html(html.render().unwrap())
 }
 
-async fn reset(State(state): State<Coordinates>) -> String {
+async fn reset(State(state): State<Coordinates>) -> impl IntoResponse {
     let mut coords = state.coordinates.lock().unwrap();
     coords.0 = 0;
     coords.1 = 0;
-    format!("Rustbot coordinates: ({}, {})", coords.0, coords.1)
+    let html = MainTemplate { i: coords.0, j: coords.1 };
+    Html(html.render().unwrap())
 }
 
-async fn right(State(state): State<Coordinates>) -> String {
+async fn right(State(state): State<Coordinates>) -> impl IntoResponse {
     let mut coords = state.coordinates.lock().unwrap();
     coords.1 += 1;
-    format!("Rustbot coordinates: ({}, {})", coords.0, coords.1)
+    let html = MainTemplate { i: coords.0, j: coords.1 };
+    Html(html.render().unwrap())
 }
 
-async fn left(State(state): State<Coordinates>) -> String {
+async fn left(State(state): State<Coordinates>) -> impl IntoResponse {
     let mut coords = state.coordinates.lock().unwrap();
     coords.1 -= 1;
-    format!("Rustbot coordinates: ({}, {})", coords.0, coords.1)
+    let html = MainTemplate { i: coords.0, j: coords.1 };
+    Html(html.render().unwrap())
 }
 
-async fn down(State(state): State<Coordinates>) -> String {
+async fn down(State(state): State<Coordinates>) -> impl IntoResponse {
     let mut coords = state.coordinates.lock().unwrap();
     coords.0 += 1;
-    format!("Rustbot coordinates: ({}, {})", coords.0, coords.1)
+    let html = MainTemplate { i: coords.0, j: coords.1 };
+    Html(html.render().unwrap())
 }
 
-async fn up(State(state): State<Coordinates>) -> String {
+async fn up(State(state): State<Coordinates>) -> impl IntoResponse {
     let mut coords = state.coordinates.lock().unwrap();
     coords.0 -= 1;
-    format!("Rustbot coordinates: ({}, {})", coords.0, coords.1)
+    let html = MainTemplate { i: coords.0, j: coords.1 };
+    Html(html.render().unwrap())
 }
