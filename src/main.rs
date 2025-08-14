@@ -35,7 +35,7 @@ async fn main() {
         .route("/left", get(left).post(left))
         .route("/down", get(down).post(down))
         .route("/up", get(up).post(up))
-        .nest_service("/static", ServeDir::new("rustbot/static"))
+        .nest_service("/static", ServeDir::new("static"))
         .with_state(rustbot_coordinates);
 
     // run app with hyper, listening globally on port 3000
