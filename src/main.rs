@@ -1,4 +1,5 @@
 use std::sync::{Arc, Mutex};
+use std::ops::DerefMut;
 
 use askama::Template;
 use axum::{
@@ -64,45 +65,22 @@ async fn root(
 async fn reset(
     State(state): State<GridState>,
 ) -> impl IntoResponse {
-    let mut coords = state.rustbot_coordinates.lock().unwrap();
+    // Max grid size
     let grid_max = state.grid_max_coordinates.lock().unwrap();
-    coords.0 = 0;
-    coords.1 = 0;
-    let html = MainTemplate {
-        rustbot_i: coords.0,
-        rustbot_j: coords.1,
-        grid_max_i: grid_max.0,
-        grid_max_j: grid_max.1,
-    };
-    Html(html.render().unwrap())
-}
+    let (i_max, j_max) = *grid_max;
+    
+    // Update rustbot coordinates
+    let mut coords = state.rustbot_coordinates.lock().unwrap();
+    let (i_coord, j_coord) = coords.deref_mut();
+    *i_coord = 0;
+    *j_coord = 0;
 
-async fn right(
-    State(state): State<GridState>,
-) -> impl IntoResponse {
-    let mut coords = state.rustbot_coordinates.lock().unwrap();
-    let grid_max = state.grid_max_coordinates.lock().unwrap();
-    coords.1 += 1;
+    // Create html response
     let html = MainTemplate {
-        rustbot_i: coords.0,
-        rustbot_j: coords.1,
-        grid_max_i: grid_max.0,
-        grid_max_j: grid_max.1,
-    };
-    Html(html.render().unwrap())
-}
-
-async fn left(
-    State(state): State<GridState>,
-) -> impl IntoResponse {
-    let mut coords = state.rustbot_coordinates.lock().unwrap();
-    let grid_max = state.grid_max_coordinates.lock().unwrap();
-    coords.1 -= 1;
-    let html = MainTemplate {
-        rustbot_i: coords.0,
-        rustbot_j: coords.1,
-        grid_max_i: grid_max.0,
-        grid_max_j: grid_max.1,
+        rustbot_i: *i_coord,
+        rustbot_j: *j_coord,
+        grid_max_i: i_max,
+        grid_max_j: j_max,
     };
     Html(html.render().unwrap())
 }
@@ -110,14 +88,25 @@ async fn left(
 async fn down(
     State(state): State<GridState>,
 ) -> impl IntoResponse {
-    let mut coords = state.rustbot_coordinates.lock().unwrap();
+    // Max grid size
     let grid_max = state.grid_max_coordinates.lock().unwrap();
-    coords.0 += 1;
+    let (i_max, j_max) = *grid_max;
+    
+    // Update rustbot coordinates
+    let mut coords = state.rustbot_coordinates.lock().unwrap();
+    let (i_coord, j_coord) = coords.deref_mut();
+    if *i_coord == i_max - 1 {
+        *i_coord = 0;
+    } else {
+        *i_coord += 1;
+    }
+
+    // Create html response
     let html = MainTemplate {
-        rustbot_i: coords.0,
-        rustbot_j: coords.1,
-        grid_max_i: grid_max.0,
-        grid_max_j: grid_max.1,
+        rustbot_i: *i_coord,
+        rustbot_j: *j_coord,
+        grid_max_i: i_max,
+        grid_max_j: j_max,
     };
     Html(html.render().unwrap())
 }
@@ -125,14 +114,77 @@ async fn down(
 async fn up(
     State(state): State<GridState>,
 ) -> impl IntoResponse {
-    let mut coords = state.rustbot_coordinates.lock().unwrap();
+    // Max grid size
     let grid_max = state.grid_max_coordinates.lock().unwrap();
-    coords.0 -= 1;
+    let (i_max, j_max) = *grid_max;
+    
+    // Update rustbot coordinates
+    let mut coords = state.rustbot_coordinates.lock().unwrap();
+    let (i_coord, j_coord) = coords.deref_mut();
+    if *i_coord == 0 {
+        *i_coord = i_max - 1;
+    } else {
+        *i_coord -= 1;
+    }
+
+    // Create html response
     let html = MainTemplate {
-        rustbot_i: coords.0,
-        rustbot_j: coords.1,
-        grid_max_i: grid_max.0,
-        grid_max_j: grid_max.1,
+        rustbot_i: *i_coord,
+        rustbot_j: *j_coord,
+        grid_max_i: i_max,
+        grid_max_j: j_max,
+    };
+    Html(html.render().unwrap())
+}
+
+async fn right(
+    State(state): State<GridState>,
+) -> impl IntoResponse {
+    // Max grid size
+    let grid_max = state.grid_max_coordinates.lock().unwrap();
+    let (i_max, j_max) = *grid_max;
+    
+    // Update rustbot coordinates
+    let mut coords = state.rustbot_coordinates.lock().unwrap();
+    let (i_coord, j_coord) = coords.deref_mut();
+    if *j_coord == j_max - 1 {
+        *j_coord = 0;
+    } else {
+        *j_coord += 1;
+    }
+
+    // Create html response
+    let html = MainTemplate {
+        rustbot_i: *i_coord,
+        rustbot_j: *j_coord,
+        grid_max_i: i_max,
+        grid_max_j: j_max,
+    };
+    Html(html.render().unwrap())
+}
+
+async fn left(
+    State(state): State<GridState>,
+) -> impl IntoResponse {
+    // Max grid size
+    let grid_max = state.grid_max_coordinates.lock().unwrap();
+    let (i_max, j_max) = *grid_max;
+    
+    // Update rustbot coordinates
+    let mut coords = state.rustbot_coordinates.lock().unwrap();
+    let (i_coord, j_coord) = coords.deref_mut();
+    if *j_coord == 0 {
+        *j_coord = j_max - 1;
+    } else {
+        *j_coord -= 1;
+    }
+
+    // Create html response
+    let html = MainTemplate {
+        rustbot_i: *i_coord,
+        rustbot_j: *j_coord,
+        grid_max_i: i_max,
+        grid_max_j: j_max,
     };
     Html(html.render().unwrap())
 }
