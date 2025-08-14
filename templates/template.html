@@ -50,17 +50,17 @@
 
     <table id="robot-grid">
         <tbody>
-            {%- for x in 0..grid_max_i %}
+        {%- for x in 0..grid_max_i %}
             <tr>
-                {%- for y in 0..grid_max_j %}
+            {%- for y in 0..grid_max_j %}
                 {%- if x == rustbot_i && y == rustbot_j %}
                 <td><img src='/static/robot.png' alt='Robot' class='image-responsive'></td>
                 {%- else %}
                 <td></td>
                 {%- endif %}
-                {%- endfor %}
-            </tr>
             {%- endfor %}
+            </tr>
+        {%- endfor %}
         </tbody>
     </table>
 
