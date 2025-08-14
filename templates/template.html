@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Welcome to my robot page!</h1>
-    <p id="coords">Current coordinates: ({{ i }}, {{ j }})</p>
+    <p id="coords">Current coordinates: ({{ rustbot_i }}, {{ rustbot_j }})</p>
     <table id="button-grid">
         <tbody>
             <tr>
@@ -49,10 +49,10 @@
 
     <table id="robot-grid">
         <tbody>
-            {%- for x in 0..5 %}
+            {%- for x in 0..grid_max_i %}
             <tr>
-                {%- for y in 0..5 %}
-                {%- if x == i && y == j %}
+                {%- for y in 0..grid_max_j %}
+                {%- if x == rustbot_i && y == rustbot_j %}
                 <td><img src='/static/robot.png' alt='Robot' class='image-responsive'></td>
                 {%- else %}
                 <td></td>
