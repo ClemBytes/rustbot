@@ -1,5 +1,5 @@
-use std::sync::{Arc, Mutex};
 use std::ops::DerefMut;
+use std::sync::{Arc, Mutex};
 
 use askama::Template;
 use axum::{
@@ -48,9 +48,7 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn root(
-    State(state): State<GridState>,
-) -> impl IntoResponse {
+async fn root(State(state): State<GridState>) -> impl IntoResponse {
     let coords = state.rustbot_coordinates.lock().unwrap();
     let grid_max = state.grid_max_coordinates.lock().unwrap();
     let html = MainTemplate {
@@ -62,13 +60,11 @@ async fn root(
     Html(html.render().unwrap())
 }
 
-async fn reset(
-    State(state): State<GridState>,
-) -> impl IntoResponse {
+async fn reset(State(state): State<GridState>) -> impl IntoResponse {
     // Max grid size
     let grid_max = state.grid_max_coordinates.lock().unwrap();
     let (i_max, j_max) = *grid_max;
-    
+
     // Update rustbot coordinates
     let mut coords = state.rustbot_coordinates.lock().unwrap();
     let (i_coord, j_coord) = coords.deref_mut();
@@ -85,13 +81,11 @@ async fn reset(
     Html(html.render().unwrap())
 }
 
-async fn down(
-    State(state): State<GridState>,
-) -> impl IntoResponse {
+async fn down(State(state): State<GridState>) -> impl IntoResponse {
     // Max grid size
     let grid_max = state.grid_max_coordinates.lock().unwrap();
     let (i_max, j_max) = *grid_max;
-    
+
     // Update rustbot coordinates
     let mut coords = state.rustbot_coordinates.lock().unwrap();
     let (i_coord, j_coord) = coords.deref_mut();
@@ -111,13 +105,11 @@ async fn down(
     Html(html.render().unwrap())
 }
 
-async fn up(
-    State(state): State<GridState>,
-) -> impl IntoResponse {
+async fn up(State(state): State<GridState>) -> impl IntoResponse {
     // Max grid size
     let grid_max = state.grid_max_coordinates.lock().unwrap();
     let (i_max, j_max) = *grid_max;
-    
+
     // Update rustbot coordinates
     let mut coords = state.rustbot_coordinates.lock().unwrap();
     let (i_coord, j_coord) = coords.deref_mut();
@@ -137,13 +129,11 @@ async fn up(
     Html(html.render().unwrap())
 }
 
-async fn right(
-    State(state): State<GridState>,
-) -> impl IntoResponse {
+async fn right(State(state): State<GridState>) -> impl IntoResponse {
     // Max grid size
     let grid_max = state.grid_max_coordinates.lock().unwrap();
     let (i_max, j_max) = *grid_max;
-    
+
     // Update rustbot coordinates
     let mut coords = state.rustbot_coordinates.lock().unwrap();
     let (i_coord, j_coord) = coords.deref_mut();
@@ -163,13 +153,11 @@ async fn right(
     Html(html.render().unwrap())
 }
 
-async fn left(
-    State(state): State<GridState>,
-) -> impl IntoResponse {
+async fn left(State(state): State<GridState>) -> impl IntoResponse {
     // Max grid size
     let grid_max = state.grid_max_coordinates.lock().unwrap();
     let (i_max, j_max) = *grid_max;
-    
+
     // Update rustbot coordinates
     let mut coords = state.rustbot_coordinates.lock().unwrap();
     let (i_coord, j_coord) = coords.deref_mut();
