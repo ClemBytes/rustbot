@@ -3,6 +3,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  font-family: 'Noto Sans Mono', monospace;
 }
 
 p, h1, h2 {
