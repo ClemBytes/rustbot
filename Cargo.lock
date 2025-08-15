@@ -456,6 +456,7 @@ dependencies = [
  "askama",
  "axum",
  "axum-cookie",
+ "serde",
  "tokio",
  "tower-http",
 ]

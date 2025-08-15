@@ -1,18 +1,21 @@
-use std::sync::{Arc, Mutex};
-
 use askama::Template;
 use axum::{
     Router,
-    extract::{State, Path},
+    extract::{Form, Path},
     response::{Html, IntoResponse},
-    routing::get,
+    routing::{get, post},
 };
 use axum_cookie::prelude::*;
+use serde::Deserialize;
 use tower_http::services::ServeDir;
 
-#[derive(Clone)]
-struct GridState {
-    grid_max_coordinates: Arc<Mutex<(u32, u32)>>,
+const DEFAULT_MAX_I: u32 = 5;
+const DEFAULT_MAX_J: u32 = 5;
+
+#[derive(Deserialize)]
+struct MaxGridSizes {
+    change_max_i: u32,
+    change_max_j: u32,
 }
 
 #[derive(Template)]
@@ -26,10 +29,6 @@ struct MainTemplate {
 
 #[tokio::main]
 async fn main() {
-    let grid_state = GridState {
-        grid_max_coordinates: Arc::new(Mutex::new((5, 5))),
-    };
-
     // Build app with different routes
     let app = Router::new()
         .route("/", get(root))
@@ -39,8 +38,8 @@ async fn main() {
         .route("/down", get(down).post(down))
         .route("/up", get(up).post(up))
         .route("/coords/{i}/{j}", get(teleport).post(teleport))
+        .route("/change-max", post(change_max))
         .nest_service("/static", ServeDir::new("static"))
-        .with_state(grid_state)
         .layer(CookieLayer::default());
 
     // run app with hyper, listening globally on port 3000
@@ -48,15 +47,20 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn root(State(state): State<GridState>, cookie: CookieManager) -> impl IntoResponse {
-    // Get grid size
-    let grid_max = state.grid_max_coordinates.lock().unwrap();
-
+async fn root(cookie: CookieManager) -> impl IntoResponse {
     // Initialize coordinates:
     let mut i_coord = 0;
     let mut j_coord = 0;
 
     // Retrieve cookies if already existing
+    let mut grid_max_i = DEFAULT_MAX_I;
+    let mut grid_max_j = DEFAULT_MAX_J;
+    if let Some(max_i_cookie) = cookie.get("max-i") {
+        grid_max_i = max_i_cookie.value().parse().unwrap();
+    }
+    if let Some(max_j_cookie) = cookie.get("max-j") {
+        grid_max_j = max_j_cookie.value().parse().unwrap();
+    }
     if let Some(i_cookie) = cookie.get("i") {
         i_coord = i_cookie.value().parse().unwrap();
     }
@@ -71,21 +75,33 @@ async fn root(State(state): State<GridState>, cookie: CookieManager) -> impl Int
     let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
     cookie_j.set_path("/");
     cookie.add(cookie_j);
+    let mut cookie_max_i = Cookie::new("max-i", format!("{grid_max_i}"));
+    cookie_max_i.set_path("/");
+    cookie.add(cookie_max_i);
+    let mut cookie_max_j = Cookie::new("max-j", format!("{grid_max_j}"));
+    cookie_max_j.set_path("/");
+    cookie.add(cookie_max_j);
 
     // Create html response
     let html = MainTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
-        grid_max_i: grid_max.0,
-        grid_max_j: grid_max.1,
+        grid_max_i,
+        grid_max_j,
     };
     Html(html.render().unwrap())
 }
 
-async fn reset(State(state): State<GridState>, cookie: CookieManager) -> impl IntoResponse {
-    // Max grid size
-    let grid_max = state.grid_max_coordinates.lock().unwrap();
-    let (i_max, j_max) = *grid_max;
+async fn reset(cookie: CookieManager) -> impl IntoResponse {
+    // Retrieve cookies if already existing
+    let mut grid_max_i = DEFAULT_MAX_I;
+    let mut grid_max_j = DEFAULT_MAX_J;
+    if let Some(max_i_cookie) = cookie.get("max-i") {
+        grid_max_i = max_i_cookie.value().parse().unwrap();
+    }
+    if let Some(max_j_cookie) = cookie.get("max-j") {
+        grid_max_j = max_j_cookie.value().parse().unwrap();
+    }
 
     // Update rustbot coordinates
     let i_coord = 0;
@@ -98,27 +114,37 @@ async fn reset(State(state): State<GridState>, cookie: CookieManager) -> impl In
     let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
     cookie_j.set_path("/");
     cookie.add(cookie_j);
+    let mut cookie_max_i = Cookie::new("max-i", format!("{grid_max_i}"));
+    cookie_max_i.set_path("/");
+    cookie.add(cookie_max_i);
+    let mut cookie_max_j = Cookie::new("max-j", format!("{grid_max_j}"));
+    cookie_max_j.set_path("/");
+    cookie.add(cookie_max_j);
 
     // Create html response
     let html = MainTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
-        grid_max_i: i_max,
-        grid_max_j: j_max,
+        grid_max_i,
+        grid_max_j,
     };
     Html(html.render().unwrap())
 }
 
-async fn down(State(state): State<GridState>, cookie: CookieManager) -> impl IntoResponse {
-    // Max grid size
-    let grid_max = state.grid_max_coordinates.lock().unwrap();
-    let (i_max, j_max) = *grid_max;
-
+async fn down(cookie: CookieManager) -> impl IntoResponse {
     // Initialize coordinates:
     let mut i_coord = 0;
     let mut j_coord = 0;
 
     // Retrieve cookies if already existing
+    let mut grid_max_i = DEFAULT_MAX_I;
+    let mut grid_max_j = DEFAULT_MAX_J;
+    if let Some(max_i_cookie) = cookie.get("max-i") {
+        grid_max_i = max_i_cookie.value().parse().unwrap();
+    }
+    if let Some(max_j_cookie) = cookie.get("max-j") {
+        grid_max_j = max_j_cookie.value().parse().unwrap();
+    }
     if let Some(i_cookie) = cookie.get("i") {
         i_coord = i_cookie.value().parse().unwrap();
     }
@@ -127,7 +153,7 @@ async fn down(State(state): State<GridState>, cookie: CookieManager) -> impl Int
     }
 
     // Update rustbot coordinates
-    if i_coord == i_max - 1 {
+    if i_coord == grid_max_i - 1 {
         i_coord = 0;
     } else {
         i_coord += 1;
@@ -140,27 +166,37 @@ async fn down(State(state): State<GridState>, cookie: CookieManager) -> impl Int
     let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
     cookie_j.set_path("/");
     cookie.add(cookie_j);
+    let mut cookie_max_i = Cookie::new("max-i", format!("{grid_max_i}"));
+    cookie_max_i.set_path("/");
+    cookie.add(cookie_max_i);
+    let mut cookie_max_j = Cookie::new("max-j", format!("{grid_max_j}"));
+    cookie_max_j.set_path("/");
+    cookie.add(cookie_max_j);
 
     // Create html response
     let html = MainTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
-        grid_max_i: i_max,
-        grid_max_j: j_max,
+        grid_max_i,
+        grid_max_j,
     };
     Html(html.render().unwrap())
 }
 
-async fn up(State(state): State<GridState>, cookie: CookieManager) -> impl IntoResponse {
-    // Max grid size
-    let grid_max = state.grid_max_coordinates.lock().unwrap();
-    let (i_max, j_max) = *grid_max;
-
+async fn up(cookie: CookieManager) -> impl IntoResponse {
     // Initialize coordinates:
     let mut i_coord = 0;
     let mut j_coord = 0;
 
     // Retrieve cookies if already existing
+    let mut grid_max_i = DEFAULT_MAX_I;
+    let mut grid_max_j = DEFAULT_MAX_J;
+    if let Some(max_i_cookie) = cookie.get("max-i") {
+        grid_max_i = max_i_cookie.value().parse().unwrap();
+    }
+    if let Some(max_j_cookie) = cookie.get("max-j") {
+        grid_max_j = max_j_cookie.value().parse().unwrap();
+    }
     if let Some(i_cookie) = cookie.get("i") {
         i_coord = i_cookie.value().parse().unwrap();
     }
@@ -170,7 +206,7 @@ async fn up(State(state): State<GridState>, cookie: CookieManager) -> impl IntoR
 
     // Update rustbot coordinates
     if i_coord == 0 {
-        i_coord = i_max - 1;
+        i_coord = grid_max_i - 1;
     } else {
         i_coord -= 1;
     }
@@ -182,27 +218,37 @@ async fn up(State(state): State<GridState>, cookie: CookieManager) -> impl IntoR
     let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
     cookie_j.set_path("/");
     cookie.add(cookie_j);
+    let mut cookie_max_i = Cookie::new("max-i", format!("{grid_max_i}"));
+    cookie_max_i.set_path("/");
+    cookie.add(cookie_max_i);
+    let mut cookie_max_j = Cookie::new("max-j", format!("{grid_max_j}"));
+    cookie_max_j.set_path("/");
+    cookie.add(cookie_max_j);
 
     // Create html response
     let html = MainTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
-        grid_max_i: i_max,
-        grid_max_j: j_max,
+        grid_max_i,
+        grid_max_j,
     };
     Html(html.render().unwrap())
 }
 
-async fn right(State(state): State<GridState>, cookie: CookieManager) -> impl IntoResponse {
-    // Max grid size
-    let grid_max = state.grid_max_coordinates.lock().unwrap();
-    let (i_max, j_max) = *grid_max;
-
+async fn right(cookie: CookieManager) -> impl IntoResponse {
     // Initialize coordinates:
     let mut i_coord = 0;
     let mut j_coord = 0;
 
     // Retrieve cookies if already existing
+    let mut grid_max_i = DEFAULT_MAX_I;
+    let mut grid_max_j = DEFAULT_MAX_J;
+    if let Some(max_i_cookie) = cookie.get("max-i") {
+        grid_max_i = max_i_cookie.value().parse().unwrap();
+    }
+    if let Some(max_j_cookie) = cookie.get("max-j") {
+        grid_max_j = max_j_cookie.value().parse().unwrap();
+    }
     if let Some(i_cookie) = cookie.get("i") {
         i_coord = i_cookie.value().parse().unwrap();
     }
@@ -211,7 +257,7 @@ async fn right(State(state): State<GridState>, cookie: CookieManager) -> impl In
     }
 
     // Update rustbot coordinates
-    if j_coord == j_max - 1 {
+    if j_coord == grid_max_j - 1 {
         j_coord = 0;
     } else {
         j_coord += 1;
@@ -224,27 +270,37 @@ async fn right(State(state): State<GridState>, cookie: CookieManager) -> impl In
     let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
     cookie_j.set_path("/");
     cookie.add(cookie_j);
+    let mut cookie_max_i = Cookie::new("max-i", format!("{grid_max_i}"));
+    cookie_max_i.set_path("/");
+    cookie.add(cookie_max_i);
+    let mut cookie_max_j = Cookie::new("max-j", format!("{grid_max_j}"));
+    cookie_max_j.set_path("/");
+    cookie.add(cookie_max_j);
 
     // Create html response
     let html = MainTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
-        grid_max_i: i_max,
-        grid_max_j: j_max,
+        grid_max_i,
+        grid_max_j,
     };
     Html(html.render().unwrap())
 }
 
-async fn left(State(state): State<GridState>, cookie: CookieManager) -> impl IntoResponse {
-    // Max grid size
-    let grid_max = state.grid_max_coordinates.lock().unwrap();
-    let (i_max, j_max) = *grid_max;
-
+async fn left(cookie: CookieManager) -> impl IntoResponse {
     // Initialize coordinates:
     let mut i_coord = 0;
     let mut j_coord = 0;
 
     // Retrieve cookies if already existing
+    let mut grid_max_i = DEFAULT_MAX_I;
+    let mut grid_max_j = DEFAULT_MAX_J;
+    if let Some(max_i_cookie) = cookie.get("max-i") {
+        grid_max_i = max_i_cookie.value().parse().unwrap();
+    }
+    if let Some(max_j_cookie) = cookie.get("max-j") {
+        grid_max_j = max_j_cookie.value().parse().unwrap();
+    }
     if let Some(i_cookie) = cookie.get("i") {
         i_coord = i_cookie.value().parse().unwrap();
     }
@@ -254,7 +310,7 @@ async fn left(State(state): State<GridState>, cookie: CookieManager) -> impl Int
 
     // Update rustbot coordinates
     if j_coord == 0 {
-        j_coord = j_max - 1;
+        j_coord = grid_max_j - 1;
     } else {
         j_coord -= 1;
     }
@@ -266,25 +322,40 @@ async fn left(State(state): State<GridState>, cookie: CookieManager) -> impl Int
     let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
     cookie_j.set_path("/");
     cookie.add(cookie_j);
+    let mut cookie_max_i = Cookie::new("max-i", format!("{grid_max_i}"));
+    cookie_max_i.set_path("/");
+    cookie.add(cookie_max_i);
+    let mut cookie_max_j = Cookie::new("max-j", format!("{grid_max_j}"));
+    cookie_max_j.set_path("/");
+    cookie.add(cookie_max_j);
 
     // Create html response
     let html = MainTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
-        grid_max_i: i_max,
-        grid_max_j: j_max,
+        grid_max_i,
+        grid_max_j,
     };
     Html(html.render().unwrap())
 }
 
-async fn teleport(State(state): State<GridState>, cookie: CookieManager, Path((i_teleport, j_teleport)): Path<(u32, u32)>) -> impl IntoResponse {
-    // Max grid size
-    let grid_max = state.grid_max_coordinates.lock().unwrap();
-    let (i_max, j_max) = *grid_max;
-
+async fn teleport(
+    cookie: CookieManager,
+    Path((i_teleport, j_teleport)): Path<(u32, u32)>,
+) -> impl IntoResponse {
     // Initialize coordinates:
     let i_coord = i_teleport;
     let j_coord = j_teleport;
+
+    // Retrieve cookies if already existing
+    let mut grid_max_i = DEFAULT_MAX_I;
+    let mut grid_max_j = DEFAULT_MAX_J;
+    if let Some(max_i_cookie) = cookie.get("max-i") {
+        grid_max_i = max_i_cookie.value().parse().unwrap();
+    }
+    if let Some(max_j_cookie) = cookie.get("max-j") {
+        grid_max_j = max_j_cookie.value().parse().unwrap();
+    }
 
     // Add cookies
     // Need set_path("/") to avoid duplicating the cookies for different URLs
@@ -294,13 +365,47 @@ async fn teleport(State(state): State<GridState>, cookie: CookieManager, Path((i
     let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
     cookie_j.set_path("/");
     cookie.add(cookie_j);
+    let mut cookie_max_i = Cookie::new("max-i", format!("{grid_max_i}"));
+    cookie_max_i.set_path("/");
+    cookie.add(cookie_max_i);
+    let mut cookie_max_j = Cookie::new("max-j", format!("{grid_max_j}"));
+    cookie_max_j.set_path("/");
+    cookie.add(cookie_max_j);
 
     // Create html response
     let html = MainTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
-        grid_max_i: i_max,
-        grid_max_j: j_max,
+        grid_max_i,
+        grid_max_j,
+    };
+    Html(html.render().unwrap())
+}
+
+async fn change_max(cookie: CookieManager, Form(max_grid_sizes): Form<MaxGridSizes>) -> impl IntoResponse {
+    let grid_max_i = max_grid_sizes.change_max_i;
+    let grid_max_j = max_grid_sizes.change_max_j;
+    // Add cookies
+    // Need set_path("/") to avoid duplicating the cookies for different URLs
+    let mut cookie_i = Cookie::new("i", format!("0"));
+    cookie_i.set_path("/");
+    cookie.add(cookie_i);
+    let mut cookie_j = Cookie::new("j", format!("0"));
+    cookie_j.set_path("/");
+    cookie.add(cookie_j);
+    let mut cookie_max_i = Cookie::new("max-i", format!("{grid_max_i}"));
+    cookie_max_i.set_path("/");
+    cookie.add(cookie_max_i);
+    let mut cookie_max_j = Cookie::new("max-j", format!("{grid_max_j}"));
+    cookie_max_j.set_path("/");
+    cookie.add(cookie_max_j);
+
+    // Create html response
+    let html = MainTemplate {
+        rustbot_i: 0,
+        rustbot_j: 0,
+        grid_max_i,
+        grid_max_j,
     };
     Html(html.render().unwrap())
 }

@@ -22,6 +22,14 @@ h1 {
   border-spacing: 5px; /* Adds spacing between table cells */
 }
 
+#grid-size {
+  color: #eceff4;
+}
+
+#column-form, #button-form {
+  margin-left: 30px;
+}
+
 #button-grid {
   padding: 0px; /* Adds space inside the table's border */
   border-spacing: 0px; /* Adds spacing between table cells */
