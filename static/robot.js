@@ -58,6 +58,17 @@ async function onClick(event) {
             await fetch("/left", { method: "POST" });
         } else if (event.target.id == "reset") {
             await fetch("/reset", { method: "POST" });
+        } else if (event.target.id == "button-form") {
+            const form = document.querySelector("#grid-size");
+            const formData = new FormData(form);
+            await fetch(
+                "/change-max",
+                {
+                    method: "POST",
+                    body: new URLSearchParams(formData),
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+                }
+            );
         } else {
             console.log(event);
             return;
@@ -84,6 +95,9 @@ left_button.addEventListener("click", onClick);
 
 const reset_button = document.getElementById("reset");
 reset_button.addEventListener("click", onClick);
+
+const button_form = document.getElementById("button-form");
+button_form.addEventListener("click", onClick);
 
 /**
  * @brief Reads cookies of document.
