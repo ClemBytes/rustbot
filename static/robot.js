@@ -89,10 +89,13 @@ reset_button.addEventListener("click", onClick);
  * @brief Reads cookies of document.
  */
 function readCookies() {
+    console.log(document.cookie);
     const cookies_array = document.cookie.split("; ");
     const x = cookies_array.find((row) => row.startsWith("i=")).split("=")[1];
     const y = cookies_array.find((row) => row.startsWith("j=")).split("=")[1];
-    return [x, y];
+    const max_x = cookies_array.find((row) => row.startsWith("max-i=")).split("=")[1];
+    const max_y = cookies_array.find((row) => row.startsWith("max-j=")).split("=")[1];
+    return [x, y, max_x, max_y];
 }
 
 /**
@@ -103,11 +106,11 @@ function readCookies() {
  * @param {int} x_max Value max for x (so number of lines in the grid - 1).
  * @param {int} y_max Value max for y (so number of columns in the grid - 1).
  */
-function generateGrid(x_coord, y_coord, x_max=5, y_max=5) {
+function generateGrid(x_coord, y_coord, max_x, max_y) {
     let grid = "";
-    for (let x = 0; x < x_max; x++) {
+    for (let x = 0; x < max_x; x++) {
         grid += "<tr>";
-        for (let y = 0; y < y_max; y++) {
+        for (let y = 0; y < max_y; y++) {
             if (x == x_coord && y == y_coord) {
                 grid += `<td data-x='${x}' data-y='${y}'><img src='/static/robot.png' alt='Robot' class='image-responsive'></td>`;
             } else {
@@ -133,8 +136,7 @@ function updateCoords(x_coord, y_coord) {
  * @brief Replace grid by newly generated one (with new robot's coordinates).
  */
 function replaceGrid() {
-    const [x_coord, y_coord] = readCookies();
-    console.log("Cookies: i: %d | j: %d", x_coord, y_coord);
-    generateGrid(x_coord, y_coord);
+    const [x_coord, y_coord, max_x, max_y] = readCookies();
+    generateGrid(x_coord, y_coord, max_x, max_y);
     updateCoords(x_coord, y_coord);
 }
