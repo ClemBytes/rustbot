@@ -382,15 +382,18 @@ async fn teleport(
     Html(html.render().unwrap())
 }
 
-async fn change_max(cookie: CookieManager, Form(max_grid_sizes): Form<MaxGridSizes>) -> impl IntoResponse {
+async fn change_max(
+    cookie: CookieManager,
+    Form(max_grid_sizes): Form<MaxGridSizes>,
+) -> impl IntoResponse {
     let grid_max_i = max_grid_sizes.change_max_i;
     let grid_max_j = max_grid_sizes.change_max_j;
     // Add cookies
     // Need set_path("/") to avoid duplicating the cookies for different URLs
-    let mut cookie_i = Cookie::new("i", format!("0"));
+    let mut cookie_i = Cookie::new("i", "0");
     cookie_i.set_path("/");
     cookie.add(cookie_i);
-    let mut cookie_j = Cookie::new("j", format!("0"));
+    let mut cookie_j = Cookie::new("j", "0");
     cookie_j.set_path("/");
     cookie.add(cookie_j);
     let mut cookie_max_i = Cookie::new("max-i", format!("{grid_max_i}"));
