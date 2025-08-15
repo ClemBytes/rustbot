@@ -47,12 +47,7 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn root(cookie: CookieManager) -> impl IntoResponse {
-    // Initialize coordinates:
-    let mut i_coord = 0;
-    let mut j_coord = 0;
-
-    // Retrieve cookies if already existing
+fn get_grid_size(cookie: &CookieManager) -> (u32, u32) {
     let mut grid_max_i = DEFAULT_MAX_I;
     let mut grid_max_j = DEFAULT_MAX_J;
     if let Some(max_i_cookie) = cookie.get("max-i") {
@@ -61,12 +56,25 @@ async fn root(cookie: CookieManager) -> impl IntoResponse {
     if let Some(max_j_cookie) = cookie.get("max-j") {
         grid_max_j = max_j_cookie.value().parse().unwrap();
     }
+    (grid_max_i, grid_max_j)
+}
+
+fn get_rustbot_coordinates(cookie: &CookieManager) -> (u32, u32) {
+    let mut i_coord = 0;
+    let mut j_coord = 0;
     if let Some(i_cookie) = cookie.get("i") {
         i_coord = i_cookie.value().parse().unwrap();
     }
     if let Some(j_cookie) = cookie.get("j") {
         j_coord = j_cookie.value().parse().unwrap();
     }
+    (i_coord, j_coord)
+}
+
+async fn root(cookie: CookieManager) -> impl IntoResponse {
+    // Retrieve cookies if already existing
+    let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
+    let (i_coord, j_coord) = get_rustbot_coordinates(&cookie);
 
     // Add cookies
     let mut cookie_i = Cookie::new("i", format!("{i_coord}"));
@@ -94,14 +102,7 @@ async fn root(cookie: CookieManager) -> impl IntoResponse {
 
 async fn reset(cookie: CookieManager) -> impl IntoResponse {
     // Retrieve cookies if already existing
-    let mut grid_max_i = DEFAULT_MAX_I;
-    let mut grid_max_j = DEFAULT_MAX_J;
-    if let Some(max_i_cookie) = cookie.get("max-i") {
-        grid_max_i = max_i_cookie.value().parse().unwrap();
-    }
-    if let Some(max_j_cookie) = cookie.get("max-j") {
-        grid_max_j = max_j_cookie.value().parse().unwrap();
-    }
+    let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
 
     // Update rustbot coordinates
     let i_coord = 0;
@@ -132,25 +133,9 @@ async fn reset(cookie: CookieManager) -> impl IntoResponse {
 }
 
 async fn down(cookie: CookieManager) -> impl IntoResponse {
-    // Initialize coordinates:
-    let mut i_coord = 0;
-    let mut j_coord = 0;
-
     // Retrieve cookies if already existing
-    let mut grid_max_i = DEFAULT_MAX_I;
-    let mut grid_max_j = DEFAULT_MAX_J;
-    if let Some(max_i_cookie) = cookie.get("max-i") {
-        grid_max_i = max_i_cookie.value().parse().unwrap();
-    }
-    if let Some(max_j_cookie) = cookie.get("max-j") {
-        grid_max_j = max_j_cookie.value().parse().unwrap();
-    }
-    if let Some(i_cookie) = cookie.get("i") {
-        i_coord = i_cookie.value().parse().unwrap();
-    }
-    if let Some(j_cookie) = cookie.get("j") {
-        j_coord = j_cookie.value().parse().unwrap();
-    }
+    let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
+    let (mut i_coord, j_coord) = get_rustbot_coordinates(&cookie);
 
     // Update rustbot coordinates
     if i_coord == grid_max_i - 1 {
@@ -184,25 +169,9 @@ async fn down(cookie: CookieManager) -> impl IntoResponse {
 }
 
 async fn up(cookie: CookieManager) -> impl IntoResponse {
-    // Initialize coordinates:
-    let mut i_coord = 0;
-    let mut j_coord = 0;
-
     // Retrieve cookies if already existing
-    let mut grid_max_i = DEFAULT_MAX_I;
-    let mut grid_max_j = DEFAULT_MAX_J;
-    if let Some(max_i_cookie) = cookie.get("max-i") {
-        grid_max_i = max_i_cookie.value().parse().unwrap();
-    }
-    if let Some(max_j_cookie) = cookie.get("max-j") {
-        grid_max_j = max_j_cookie.value().parse().unwrap();
-    }
-    if let Some(i_cookie) = cookie.get("i") {
-        i_coord = i_cookie.value().parse().unwrap();
-    }
-    if let Some(j_cookie) = cookie.get("j") {
-        j_coord = j_cookie.value().parse().unwrap();
-    }
+    let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
+    let (mut i_coord, j_coord) = get_rustbot_coordinates(&cookie);
 
     // Update rustbot coordinates
     if i_coord == 0 {
@@ -236,25 +205,9 @@ async fn up(cookie: CookieManager) -> impl IntoResponse {
 }
 
 async fn right(cookie: CookieManager) -> impl IntoResponse {
-    // Initialize coordinates:
-    let mut i_coord = 0;
-    let mut j_coord = 0;
-
     // Retrieve cookies if already existing
-    let mut grid_max_i = DEFAULT_MAX_I;
-    let mut grid_max_j = DEFAULT_MAX_J;
-    if let Some(max_i_cookie) = cookie.get("max-i") {
-        grid_max_i = max_i_cookie.value().parse().unwrap();
-    }
-    if let Some(max_j_cookie) = cookie.get("max-j") {
-        grid_max_j = max_j_cookie.value().parse().unwrap();
-    }
-    if let Some(i_cookie) = cookie.get("i") {
-        i_coord = i_cookie.value().parse().unwrap();
-    }
-    if let Some(j_cookie) = cookie.get("j") {
-        j_coord = j_cookie.value().parse().unwrap();
-    }
+    let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
+    let (i_coord, mut j_coord) = get_rustbot_coordinates(&cookie);
 
     // Update rustbot coordinates
     if j_coord == grid_max_j - 1 {
@@ -288,25 +241,9 @@ async fn right(cookie: CookieManager) -> impl IntoResponse {
 }
 
 async fn left(cookie: CookieManager) -> impl IntoResponse {
-    // Initialize coordinates:
-    let mut i_coord = 0;
-    let mut j_coord = 0;
-
     // Retrieve cookies if already existing
-    let mut grid_max_i = DEFAULT_MAX_I;
-    let mut grid_max_j = DEFAULT_MAX_J;
-    if let Some(max_i_cookie) = cookie.get("max-i") {
-        grid_max_i = max_i_cookie.value().parse().unwrap();
-    }
-    if let Some(max_j_cookie) = cookie.get("max-j") {
-        grid_max_j = max_j_cookie.value().parse().unwrap();
-    }
-    if let Some(i_cookie) = cookie.get("i") {
-        i_coord = i_cookie.value().parse().unwrap();
-    }
-    if let Some(j_cookie) = cookie.get("j") {
-        j_coord = j_cookie.value().parse().unwrap();
-    }
+    let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
+    let (i_coord, mut j_coord) = get_rustbot_coordinates(&cookie);
 
     // Update rustbot coordinates
     if j_coord == 0 {
@@ -348,14 +285,7 @@ async fn teleport(
     let j_coord = j_teleport;
 
     // Retrieve cookies if already existing
-    let mut grid_max_i = DEFAULT_MAX_I;
-    let mut grid_max_j = DEFAULT_MAX_J;
-    if let Some(max_i_cookie) = cookie.get("max-i") {
-        grid_max_i = max_i_cookie.value().parse().unwrap();
-    }
-    if let Some(max_j_cookie) = cookie.get("max-j") {
-        grid_max_j = max_j_cookie.value().parse().unwrap();
-    }
+    let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
 
     // Add cookies
     // Need set_path("/") to avoid duplicating the cookies for different URLs
