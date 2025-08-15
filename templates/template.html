@@ -45,6 +45,8 @@
             </tr>
         </tbody>
     </table>
+    <p>Now you can also use the arrow keys (and backspace for reset)!<br>
+       You can also click directly on a grid cell to teleport to it!</p>
 
     <table id="robot-grid">
         <tbody>
@@ -52,9 +54,9 @@
             <tr>
             {%- for y in 0..grid_max_j %}
                 {%- if x == rustbot_i && y == rustbot_j %}
-                <td><img src='/static/robot.png' alt='Robot' class='image-responsive'></td>
+                <td data-x='{{ x }}' data-y='{{ y }}'><img src='/static/robot.png' alt='Robot' class='image-responsive'></td>
                 {%- else %}
-                <td></td>
+                <td data-x='{{ x }}' data-y='{{ y }}'></td>
                 {%- endif %}
             {%- endfor %}
             </tr>
@@ -62,5 +64,6 @@
         </tbody>
     </table>
 
+    <script src="/static/robot.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use askama::Template;
 use axum::{
     Router,
-    extract::State,
+    extract::{State, Path},
     response::{Html, IntoResponse},
     routing::get,
 };
@@ -38,6 +38,7 @@ async fn main() {
         .route("/left", get(left).post(left))
         .route("/down", get(down).post(down))
         .route("/up", get(up).post(up))
+        .route("/coords/{i}/{j}", get(teleport).post(teleport))
         .nest_service("/static", ServeDir::new("static"))
         .with_state(grid_state)
         .layer(CookieLayer::default());
@@ -64,8 +65,12 @@ async fn root(State(state): State<GridState>, cookie: CookieManager) -> impl Int
     }
 
     // Add cookies
-    cookie.add(Cookie::new("i", format!("{i_coord}")));
-    cookie.add(Cookie::new("j", format!("{j_coord}")));
+    let mut cookie_i = Cookie::new("i", format!("{i_coord}"));
+    cookie_i.set_path("/");
+    cookie.add(cookie_i);
+    let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
+    cookie_j.set_path("/");
+    cookie.add(cookie_j);
 
     // Create html response
     let html = MainTemplate {
@@ -87,8 +92,12 @@ async fn reset(State(state): State<GridState>, cookie: CookieManager) -> impl In
     let j_coord = 0;
 
     // Add cookies
-    cookie.add(Cookie::new("i", format!("{i_coord}")));
-    cookie.add(Cookie::new("j", format!("{j_coord}")));
+    let mut cookie_i = Cookie::new("i", format!("{i_coord}"));
+    cookie_i.set_path("/");
+    cookie.add(cookie_i);
+    let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
+    cookie_j.set_path("/");
+    cookie.add(cookie_j);
 
     // Create html response
     let html = MainTemplate {
@@ -125,8 +134,12 @@ async fn down(State(state): State<GridState>, cookie: CookieManager) -> impl Int
     }
 
     // Add cookies
-    cookie.add(Cookie::new("i", format!("{i_coord}")));
-    cookie.add(Cookie::new("j", format!("{j_coord}")));
+    let mut cookie_i = Cookie::new("i", format!("{i_coord}"));
+    cookie_i.set_path("/");
+    cookie.add(cookie_i);
+    let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
+    cookie_j.set_path("/");
+    cookie.add(cookie_j);
 
     // Create html response
     let html = MainTemplate {
@@ -163,8 +176,12 @@ async fn up(State(state): State<GridState>, cookie: CookieManager) -> impl IntoR
     }
 
     // Add cookies
-    cookie.add(Cookie::new("i", format!("{i_coord}")));
-    cookie.add(Cookie::new("j", format!("{j_coord}")));
+    let mut cookie_i = Cookie::new("i", format!("{i_coord}"));
+    cookie_i.set_path("/");
+    cookie.add(cookie_i);
+    let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
+    cookie_j.set_path("/");
+    cookie.add(cookie_j);
 
     // Create html response
     let html = MainTemplate {
@@ -201,8 +218,12 @@ async fn right(State(state): State<GridState>, cookie: CookieManager) -> impl In
     }
 
     // Add cookies
-    cookie.add(Cookie::new("i", format!("{i_coord}")));
-    cookie.add(Cookie::new("j", format!("{j_coord}")));
+    let mut cookie_i = Cookie::new("i", format!("{i_coord}"));
+    cookie_i.set_path("/");
+    cookie.add(cookie_i);
+    let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
+    cookie_j.set_path("/");
+    cookie.add(cookie_j);
 
     // Create html response
     let html = MainTemplate {
@@ -239,8 +260,40 @@ async fn left(State(state): State<GridState>, cookie: CookieManager) -> impl Int
     }
 
     // Add cookies
-    cookie.add(Cookie::new("i", format!("{i_coord}")));
-    cookie.add(Cookie::new("j", format!("{j_coord}")));
+    let mut cookie_i = Cookie::new("i", format!("{i_coord}"));
+    cookie_i.set_path("/");
+    cookie.add(cookie_i);
+    let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
+    cookie_j.set_path("/");
+    cookie.add(cookie_j);
+
+    // Create html response
+    let html = MainTemplate {
+        rustbot_i: i_coord,
+        rustbot_j: j_coord,
+        grid_max_i: i_max,
+        grid_max_j: j_max,
+    };
+    Html(html.render().unwrap())
+}
+
+async fn teleport(State(state): State<GridState>, cookie: CookieManager, Path((i_teleport, j_teleport)): Path<(u32, u32)>) -> impl IntoResponse {
+    // Max grid size
+    let grid_max = state.grid_max_coordinates.lock().unwrap();
+    let (i_max, j_max) = *grid_max;
+
+    // Initialize coordinates:
+    let i_coord = i_teleport;
+    let j_coord = j_teleport;
+
+    // Add cookies
+    // Need set_path("/") to avoid duplicating the cookies for different URLs
+    let mut cookie_i = Cookie::new("i", format!("{i_coord}"));
+    cookie_i.set_path("/");
+    cookie.add(cookie_i);
+    let mut cookie_j = Cookie::new("j", format!("{j_coord}"));
+    cookie_j.set_path("/");
+    cookie.add(cookie_j);
 
     // Create html response
     let html = MainTemplate {
