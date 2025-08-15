@@ -12,12 +12,18 @@ use tower_http::services::ServeDir;
 const DEFAULT_MAX_I: u32 = 5;
 const DEFAULT_MAX_J: u32 = 5;
 
+/// Struct representing the new grid sizes submitted via a form.
+///
+/// Used to deserialize the POST request payload from `/change-max`.
 #[derive(Deserialize)]
 struct MaxGridSizes {
     change_max_i: u32,
     change_max_j: u32,
 }
 
+/// Template context for the main page.
+///
+/// Passed to Askama to render `template.html`.
 #[derive(Template)]
 #[template(path = "template.html")]
 struct MainTemplate {
@@ -27,6 +33,33 @@ struct MainTemplate {
     grid_max_j: u32,
 }
 
+/// Launches the RustBot web server
+///
+/// # Description
+/// This `async` function sets up the Axum application, defining all routes for
+/// controlling the bot and serving static files. It then binds a TCP listener
+/// on port 3000 and starts serving requests using Hyper.
+///
+/// # Routes
+/// - `/` → `root`: shows current coordinates
+/// - `/reset` → `reset`: reset coordinates to (0, 0)
+/// - `/right` → `right`: move bot right
+/// - `/left` → `left`: move bot left
+/// - `/down` → `down`: move bot down
+/// - `/up` → `up`: move bot up
+/// - `/coords/{i}/{j}` → `teleport`: teleport bot to specific coordinates
+/// - `/change-max` → `change_max`: update grid size via form submission
+/// - `/static` → serves static files from `static` directory
+///
+/// # Notes
+/// - Uses `CookieLayer` for storing coordinates in cookies.
+/// - Listens globally on `0.0.0.0:3000`.
+///
+/// # Example
+/// ```no_run
+/// // Simply run the server:
+/// cargo run
+/// ```
 #[tokio::main]
 async fn main() {
     // Build app with different routes
@@ -47,6 +80,28 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
+/// Reads the current grid size from cookies.
+///
+/// This function checks the cookies `"max-i"` and `"max-j"` to determine
+/// the number of rows (`i`) and columns (`j`) of the grid. If the cookies
+/// are not present, it returns default values (`DEFAULT_MAX_I` and `DEFAULT_MAX_J`).
+///
+/// # Parameters
+/// - `cookie`: Reference to the `CookieManager` from which to read the cookies.
+///
+/// # Returns
+/// A tuple `(grid_max_i, grid_max_j)` representing the number of rows and columns.
+///
+/// # Panics
+/// This function will panic if the cookie values are present but cannot be parsed
+/// into `u32`.
+///
+/// # Example
+/// ```no_run
+/// let cookie_manager = CookieManager::new();
+/// let (rows, cols) = get_grid_size(&cookie_manager);
+/// println!("Grid size: {}x{}", rows, cols);
+/// ```
 fn get_grid_size(cookie: &CookieManager) -> (u32, u32) {
     let mut grid_max_i = DEFAULT_MAX_I;
     let mut grid_max_j = DEFAULT_MAX_J;
@@ -59,6 +114,17 @@ fn get_grid_size(cookie: &CookieManager) -> (u32, u32) {
     (grid_max_i, grid_max_j)
 }
 
+/// Retrieves Rustbot's current coordinates from cookies.
+///
+/// If the cookies `"i"` or `"j"` are not present, defaults to `(0, 0)`.
+///
+/// # Arguments
+///
+/// * `cookie` - A reference to the `CookieManager` containing the cookies.
+///
+/// # Returns
+///
+/// A tuple `(i_coord, j_coord)` representing Rustbot's row and column positions.
 fn get_rustbot_coordinates(cookie: &CookieManager) -> (u32, u32) {
     let mut i_coord = 0;
     let mut j_coord = 0;
@@ -71,6 +137,18 @@ fn get_rustbot_coordinates(cookie: &CookieManager) -> (u32, u32) {
     (i_coord, j_coord)
 }
 
+/// Updates Rustbot's coordinates and grid size cookies.
+///
+/// Sets the cookies `"i"`, `"j"`, `"max-i"`, and `"max-j"` to the provided values,
+/// and ensures their path is `/` to make them available site-wide.
+///
+/// # Arguments
+///
+/// * `i_coord` - The current row of Rustbot.
+/// * `j_coord` - The current column of Rustbot.
+/// * `grid_max_i` - Maximum number of rows in the grid.
+/// * `grid_max_j` - Maximum number of columns in the grid.
+/// * `cookie` - A mutable reference to the `CookieManager` used to store the cookies.
 fn update_cookie(
     i_coord: u32,
     j_coord: u32,
@@ -93,6 +171,18 @@ fn update_cookie(
     cookie.add(cookie_max_j);
 }
 
+/// Handler for the root path `/`.
+///
+/// Retrieves Rustbot's coordinates and the grid size from cookies, updates them if necessary,
+/// and renders the main HTML template.
+///
+/// # Arguments
+///
+/// * `cookie` - The `CookieManager` provided by Axum, used to read and update cookies.
+///
+/// # Returns
+///
+/// An `Html<String>` response containing the rendered template, implementing `IntoResponse`.
 async fn root(mut cookie: CookieManager) -> impl IntoResponse {
     // Retrieve cookies if already existing
     let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
@@ -111,6 +201,22 @@ async fn root(mut cookie: CookieManager) -> impl IntoResponse {
     Html(html.render().unwrap())
 }
 
+/// Handler for resetting Rustbot's coordinates to `(0, 0)`.
+///
+/// Retrieves the current grid size from cookies, resets the Rustbot coordinates,
+/// updates the cookies accordingly, and renders the main HTML template.
+///
+/// # Arguments
+///
+/// * `cookie` - The `CookieManager` provided by Axum, used to read and update cookies.
+///
+/// # Returns
+///
+/// An `Html<String>` response containing the rendered template, implementing `IntoResponse`.
+///
+/// # Panics
+///
+/// Will panic if rendering the template fails (`unwrap()` on `html.render()`).
 async fn reset(mut cookie: CookieManager) -> impl IntoResponse {
     // Retrieve cookies if already existing
     let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
@@ -132,6 +238,23 @@ async fn reset(mut cookie: CookieManager) -> impl IntoResponse {
     Html(html.render().unwrap())
 }
 
+/// Handler to move Rustbot **down** by one row in the grid.
+///
+/// Retrieves the current grid size and Rustbot coordinates from cookies,
+/// increments the `i` coordinate (row) by one, wrapping around to 0 if it
+/// reaches the maximum, updates the cookies, and renders the main HTML template.
+///
+/// # Arguments
+///
+/// * `cookie` - The `CookieManager` provided by Axum, used to read and update cookies.
+///
+/// # Returns
+///
+/// An `Html<String>` response containing the rendered template, implementing `IntoResponse`.
+///
+/// # Panics
+///
+/// Will panic if rendering the template fails (`unwrap()` on `html.render()`).
 async fn down(mut cookie: CookieManager) -> impl IntoResponse {
     // Retrieve cookies if already existing
     let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
@@ -157,6 +280,23 @@ async fn down(mut cookie: CookieManager) -> impl IntoResponse {
     Html(html.render().unwrap())
 }
 
+/// Handler to move Rustbot **up** by one row in the grid.
+///
+/// Retrieves the current grid size and Rustbot coordinates from cookies,
+/// decrements the `i` coordinate (row) by one, wrapping around to the maximum
+/// if it reaches 0, updates the cookies, and renders the main HTML template.
+///
+/// # Arguments
+///
+/// * `cookie` - The `CookieManager` provided by Axum, used to read and update cookies.
+///
+/// # Returns
+///
+/// An `Html<String>` response containing the rendered template, implementing `IntoResponse`.
+///
+/// # Panics
+///
+/// Will panic if rendering the template fails (`unwrap()` on `html.render()`).
 async fn up(mut cookie: CookieManager) -> impl IntoResponse {
     // Retrieve cookies if already existing
     let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
@@ -182,6 +322,23 @@ async fn up(mut cookie: CookieManager) -> impl IntoResponse {
     Html(html.render().unwrap())
 }
 
+/// Handler to move Rustbot **right** by one row in the grid.
+///
+/// Retrieves the current grid size and Rustbot coordinates from cookies,
+/// increments the `j` coordinate (column) by one, wrapping around to 0 if it
+/// reaches the maximum, updates the cookies, and renders the main HTML template.
+///
+/// # Arguments
+///
+/// * `cookie` - The `CookieManager` provided by Axum, used to read and update cookies.
+///
+/// # Returns
+///
+/// An `Html<String>` response containing the rendered template, implementing `IntoResponse`.
+///
+/// # Panics
+///
+/// Will panic if rendering the template fails (`unwrap()` on `html.render()`).
 async fn right(mut cookie: CookieManager) -> impl IntoResponse {
     // Retrieve cookies if already existing
     let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
@@ -207,6 +364,23 @@ async fn right(mut cookie: CookieManager) -> impl IntoResponse {
     Html(html.render().unwrap())
 }
 
+/// Handler to move Rustbot **left** by one row in the grid.
+///
+/// Retrieves the current grid size and Rustbot coordinates from cookies,
+/// decrements the `j` coordinate (row) by one, wrapping around to the maximum
+/// if it reaches 0, updates the cookies, and renders the main HTML template.
+///
+/// # Arguments
+///
+/// * `cookie` - The `CookieManager` provided by Axum, used to read and update cookies.
+///
+/// # Returns
+///
+/// An `Html<String>` response containing the rendered template, implementing `IntoResponse`.
+///
+/// # Panics
+///
+/// Will panic if rendering the template fails (`unwrap()` on `html.render()`).
 async fn left(mut cookie: CookieManager) -> impl IntoResponse {
     // Retrieve cookies if already existing
     let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
@@ -232,6 +406,24 @@ async fn left(mut cookie: CookieManager) -> impl IntoResponse {
     Html(html.render().unwrap())
 }
 
+/// Handler to teleport Rustbot to specific coordinates `(i, j)` in the grid.
+///
+/// Retrieves the current grid size from cookies, sets Rustbot's coordinates
+/// to the provided `i_teleport` and `j_teleport` values, updates the cookies,
+/// and renders the main HTML template.
+///
+/// # Arguments
+///
+/// * `cookie` - The `CookieManager` provided by Axum, used to read and update cookies.
+/// * `Path((i_teleport, j_teleport))` - The target coordinates provided in the URL path.
+///
+/// # Returns
+///
+/// An `Html<String>` response containing the rendered template, implementing `IntoResponse`.
+///
+/// # Panics
+///
+/// Will panic if rendering the template fails (`unwrap()` on `html.render()`).
 async fn teleport(
     mut cookie: CookieManager,
     Path((i_teleport, j_teleport)): Path<(u32, u32)>,
@@ -256,6 +448,25 @@ async fn teleport(
     Html(html.render().unwrap())
 }
 
+/// Handler to change the grid size.
+///
+/// Receives new grid dimensions from a submitted form (`MaxGridSizes`),
+/// resets Rustbot's coordinates to `(0, 0)`, updates the cookies with
+/// the new grid size, and renders the main HTML template.
+///
+/// # Arguments
+///
+/// * `cookie` - The `CookieManager` provided by Axum, used to read and update cookies.
+/// * `Form(max_grid_sizes)` - The submitted form data containing the new grid dimensions.
+///
+/// # Returns
+///
+/// An `Html<String>` response containing the rendered template with Rustbot
+/// reset at `(0, 0)` and the updated grid size.
+///
+/// # Panics
+///
+/// Will panic if rendering the template fails (`unwrap()` on `html.render()`).
 async fn change_max(
     mut cookie: CookieManager,
     Form(max_grid_sizes): Form<MaxGridSizes>,
