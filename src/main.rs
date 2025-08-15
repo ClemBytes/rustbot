@@ -71,7 +71,13 @@ fn get_rustbot_coordinates(cookie: &CookieManager) -> (u32, u32) {
     (i_coord, j_coord)
 }
 
-fn update_cookie(i_coord: u32, j_coord: u32, grid_max_i: u32, grid_max_j: u32, cookie: &mut CookieManager) {
+fn update_cookie(
+    i_coord: u32,
+    j_coord: u32,
+    grid_max_i: u32,
+    grid_max_j: u32,
+    cookie: &mut CookieManager,
+) {
     // Need set_path("/") to avoid duplicating the cookies for different URLs
     let mut cookie_i = Cookie::new("i", format!("{i_coord}"));
     cookie_i.set_path("/");
@@ -256,7 +262,7 @@ async fn change_max(
 ) -> impl IntoResponse {
     let grid_max_i = max_grid_sizes.change_max_i;
     let grid_max_j = max_grid_sizes.change_max_j;
-    
+
     // Add cookies
     update_cookie(0, 0, grid_max_i, grid_max_j, &mut cookie);
 
