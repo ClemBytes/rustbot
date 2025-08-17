@@ -1,5 +1,5 @@
 # Step 1: build app
-FROM rust:1.83 AS builder
+FROM rust:1.89 AS builder
 WORKDIR /app
 # musl for static build
 RUN apt-get update && apt-get install -y musl-tools
