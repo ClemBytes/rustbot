@@ -9,8 +9,12 @@ use axum_cookie::prelude::*;
 use serde::Deserialize;
 use tower_http::services::ServeDir;
 
+// Default values for grid size
 const DEFAULT_MAX_I: u32 = 5;
 const DEFAULT_MAX_J: u32 = 5;
+// Max values authorized for grid size
+const MAX_MAX_I: u32 = 20;
+const MAX_MAX_J: u32 = 20;
 
 /// Struct representing the new grid sizes submitted via a form.
 ///
@@ -85,6 +89,9 @@ async fn main() {
 /// This function checks the cookies `"max-i"` and `"max-j"` to determine
 /// the number of rows (`i`) and columns (`j`) of the grid. If the cookies
 /// are not present, it returns default values (`DEFAULT_MAX_I` and `DEFAULT_MAX_J`).
+/// 
+/// If parse fails (for exemple if user changes cookies for absurd values), returns
+/// default values. Also forbids to have values set bigger than MAX_MAX_I/J.
 ///
 /// # Parameters
 /// - `cookie`: Reference to the `CookieManager` from which to read the cookies.
@@ -106,10 +113,28 @@ fn get_grid_size(cookie: &CookieManager) -> (u32, u32) {
     let mut grid_max_i = DEFAULT_MAX_I;
     let mut grid_max_j = DEFAULT_MAX_J;
     if let Some(max_i_cookie) = cookie.get("max-i") {
-        grid_max_i = max_i_cookie.value().parse().unwrap();
+        match max_i_cookie.value().parse() {
+            Ok(cookie_max_i) => {
+                if cookie_max_i > MAX_MAX_I {
+                    grid_max_i = MAX_MAX_I;
+                } else {
+                    grid_max_i = cookie_max_i;
+                }
+            },
+            Err(_) => grid_max_i = DEFAULT_MAX_I,
+        }
     }
     if let Some(max_j_cookie) = cookie.get("max-j") {
-        grid_max_j = max_j_cookie.value().parse().unwrap();
+        match max_j_cookie.value().parse() {
+            Ok(cookie_max_j) => {
+                if cookie_max_j > MAX_MAX_J {
+                    grid_max_j = MAX_MAX_J;
+                } else {
+                    grid_max_j = cookie_max_j;
+                }
+            },
+            Err(_) => grid_max_j = DEFAULT_MAX_J,
+        }
     }
     (grid_max_i, grid_max_j)
 }
