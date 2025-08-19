@@ -142,6 +142,9 @@ fn get_grid_size(cookie: &CookieManager) -> (u32, u32) {
 /// Retrieves Rustbot's current coordinates from cookies.
 ///
 /// If the cookies `"i"` or `"j"` are not present, defaults to `(0, 0)`.
+/// 
+/// If parse fails (for exemple if user changes cookies for absurd values), returns
+/// to 0. Also forbids to have values set bigger than grid size.
 ///
 /// # Arguments
 ///
@@ -151,13 +154,32 @@ fn get_grid_size(cookie: &CookieManager) -> (u32, u32) {
 ///
 /// A tuple `(i_coord, j_coord)` representing Rustbot's row and column positions.
 fn get_rustbot_coordinates(cookie: &CookieManager) -> (u32, u32) {
+    let (grid_size_i, grid_size_j) = get_grid_size(cookie);
     let mut i_coord = 0;
     let mut j_coord = 0;
     if let Some(i_cookie) = cookie.get("i") {
-        i_coord = i_cookie.value().parse().unwrap();
+        match i_cookie.value().parse() {
+            Ok(cookie_i) => {
+                if cookie_i > grid_size_i {
+                    i_coord = grid_size_i - 1;
+                } else {
+                    i_coord = cookie_i;
+                }
+            },
+            Err(_) => i_coord = 0,
+        }
     }
     if let Some(j_cookie) = cookie.get("j") {
-        j_coord = j_cookie.value().parse().unwrap();
+        match j_cookie.value().parse() {
+            Ok(cookie_j) => {
+                if cookie_j > grid_size_j {
+                    j_coord = grid_size_j - 1;
+                } else {
+                    j_coord = cookie_j;
+                }
+            },
+            Err(_) => j_coord = 0,
+        }
     }
     (i_coord, j_coord)
 }
