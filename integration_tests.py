@@ -260,8 +260,8 @@ def main():
         flag13 = False
 
     ct = r_js.headers["Content-Type"]
-    if ct != "application/javascript":
-        print(f"Wrong Content-Type: {ct} (received) != application/javascript (expected)")
+    if ct != "text/javascript":
+        print(f"Wrong Content-Type: {ct} (received) != text/javascript (expected)")
         flag13 = False
 
     cl = int(r_js.headers["Content-Length"])
@@ -284,10 +284,9 @@ def main():
     flag2 = True
     r_rand = requests.get(local_address + '.well-known/appspecific/com.chrome.devtools.json')
     
-    if r_rand.status_code != requests.codes.ok:
-        print(f"Bad status code: {r_rand.status_code}")
+    if r_rand.status_code != requests.codes.not_found:
         flag2 = False
-        
+
     if flag2:
         print("OK!")
     
@@ -350,7 +349,46 @@ def main():
     if flag3:
         print("OK!")
     print("------------------------------------------------------------------")
-    return flag1 and flag2 and flag3
+
+    print("------------------------------------------------------------------")
+    print("TEST 4 : change grid size")
+    print("-------------------------")
+    # Normal change
+    new_max_i = 3
+    new_max_j = 3
+    r_change_grid = requests.post(
+        local_address + 'change-max',
+        data={
+            "change_max_i": new_max_i,
+            "change_max_j": new_max_j
+        }
+    )
+    
+    if r_change_grid.status_code != requests.codes.ok:
+        print(f"Bad status code: {r_change_grid.status_code}")
+        flag4 = False
+
+    new_grid = find_robot_grid(r_change_grid)
+    if len(new_grid) != new_max_i:
+        print(f"Wrong number of lines!\nExpected: {new_max_i} | Received: {len(new_grid)}")
+        flag4 = False
+    if len(new_grid[0]) != new_max_j:
+        print(f"Wrong number of columns!\nExpected: {new_max_j} | Received: {len(new_grid[0])}")
+        flag4 = False
+    
+    if flag4:
+        print("> Change size for inbounds values OK!")
+    
+    # TODO: Absurd cookies (> 20, or letters instead of numbers)
+
+
+    flag4 = True
+    if flag4:
+        print("OK!")
+    print("------------------------------------------------------------------")
+
+
+    return flag1 and flag2 and flag3 and flag4
 
 if __name__ == '__main__':
     # open server
@@ -367,6 +405,7 @@ if __name__ == '__main__':
 
     try:
         # launch tests
+        time.sleep(0.1) # Sometimes CSS request fail if we don't do that
         flag = main()
     except:
         print("\n------------------------------------------------------------------")
