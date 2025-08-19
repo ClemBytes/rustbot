@@ -10,10 +10,15 @@ use serde::Deserialize;
 use tower_http::services::ServeDir;
 
 // Default values for grid size
+/// Default number of lines in grid
 const DEFAULT_MAX_I: u32 = 5;
+/// Default number of columns in grid
 const DEFAULT_MAX_J: u32 = 5;
+
 // Max values authorized for grid size
+/// Maximum authorized number of lines
 const MAX_MAX_I: u32 = 20;
+/// Maximum authorized number of columns
 const MAX_MAX_J: u32 = 20;
 
 /// Struct representing the new grid sizes submitted via a form.
