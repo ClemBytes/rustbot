@@ -246,9 +246,9 @@ def main():
 
     # JS script
     flag13 = True
-    r_js = requests.get(local_address + 'static/robot.js')
+    r_js = requests.get(local_address + 'static/robot_play.js')
 
-    with open("static/robot.js", "rb") as f:
+    with open("static/robot_play.js", "rb") as f:
         expected_js = f.read()
 
     if r_js.status_code != requests.codes.ok:
