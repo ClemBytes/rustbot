@@ -32,13 +32,23 @@
 
     <table id="robot-grid">
         <tbody>
+        <!-- Header row (columns) -->
+        <tr>
+            <td class="corner"></td>
+            {%- for y in 0..grid_max_j %}
+                <td class="header">{{ y }}</td>
+            {%- endfor %}
+        </tr>
+
         {%- for x in 0..grid_max_i %}
             <tr>
+            <td class="header-column">{{ x }}</td> <!-- Line number -->
+
             {%- for y in 0..grid_max_j %}
                 {%- if x == rustbot_i && y == rustbot_j %}
-                <td data-x='{{ x }}' data-y='{{ y }}'><img src='/static/robot.png' alt='Robot' class='image-responsive'></td>
+                <td class="grid-cell" data-x='{{ x }}' data-y='{{ y }}'><img src='/static/robot.png' alt='Robot' class='image-responsive'></td>
                 {%- else %}
-                <td data-x='{{ x }}' data-y='{{ y }}'></td>
+                <td class="grid-cell" data-x='{{ x }}' data-y='{{ y }}'></td>
                 {%- endif %}
             {%- endfor %}
             </tr>

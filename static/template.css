@@ -93,14 +93,6 @@ h1 {
   font-size: 1.7rem;
 }
 
-#robot-grid {
-  border: 1px solid #4c566a; /* Adds a black border around the table */
-  margin: 5px; /* Adds space outside the table */
-  background-color: #3b4252; /* Sets the table's background color */
-  padding: 5px; /* Adds space inside the table's border */
-  border-spacing: 5px; /* Adds spacing between table cells */
-}
-
 #grid-size {
   color: #eceff4;
 }
@@ -125,17 +117,55 @@ td {
 
 }
 
-#robot-grid tr, #robot-grid td {
-  border: 1px solid #254e65; /* Adds a black border around each cell */
-  width: 100px; /* Sets the width of each cell */
-  height: 100px; /* Sets the height of each cell */
-  background-color: #81a1c1; /* Sets the background color of the cells */
-  transition: background-color 0.2s ease, border 0.2s ease, transform 0.2s ease; /* Adds smooth transitions for hover effects */
+#robot-grid {
+  border: 1px solid #4c566a; /* Adds a black border around the table */
+  margin: 5px; /* Adds space outside the table */
+  background-color: #3b4252; /* Sets the table's background color */
+  padding: 5px; /* Adds space inside the table's border */
+  border-spacing: 5px; /* Adds spacing between table cells */
 }
 
-#robot-grid td:hover {
-  transform: scale(1.1); /* Slightly enlarges the hovered cell */
-  background-color: #88c0d0; /* Sets the background color of the hovered cell */
+#robot-grid td.grid-cell {
+  border: 1px solid #254e65;
+  width: 100px;
+  height: 100px;
+  background-color: #81a1c1;
+  transition: background-color 0.2s ease, border 0.2s ease, transform 0.2s ease;
+}
+
+/* Hover on cells */
+#robot-grid td.grid-cell:hover {
+  transform: scale(1.1);
+  background-color: #88c0d0;
+}
+
+/* Columns' headers */
+#robot-grid .header {
+  background-color: #2e3440;
+  color: #eceff4;
+  font-size: 0.8rem;
+  text-align: center;
+  font-weight: bold;
+  height: 20px; /* maintenant c’est pris correctement */
+}
+
+/* Lines' headers */
+#robot-grid .header-column {
+  background-color: #2e3440;
+  color: #eceff4;
+  font-size: 0.8rem;
+  text-align: center;
+  font-weight: bold;
+  width: 20px;
+  height: 20px; /* rajoute si tu veux */
+}
+
+/* Corner */
+#robot-grid .corner {
+  background-color: #3b4252;
+  border: none;
+  width: 20px;
+  height: 20px;
 }
 
 button:hover {
