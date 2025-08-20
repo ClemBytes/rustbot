@@ -17,4 +17,4 @@ jobs:
     - name: Install Python dependencies
       run: pip install -r python_requirements.txt
     - name: tests
-      run: python3 ./integration_test.py
+      run: python3 integration_test.py
