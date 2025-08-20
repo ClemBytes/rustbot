@@ -13,7 +13,7 @@ p, h1, h2, h3 {
 #double-columns {
   color: #eceff4;
   width: 50%;
-  border-spacing: 30px;
+  border-spacing: 40px 0px;
 }
 
 #code {
@@ -34,10 +34,6 @@ p, h1, h2, h3 {
   padding: 10px; /*internal margin*/
   font-size: 16px;
   color: #eceff4;
-  border: 2px solid #eceff4;
-  border-radius: 8px;
-  resize: vertical;
-  background-color: #3b4252;
   text-align: left;
 }
 
