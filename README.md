@@ -46,8 +46,6 @@ You can contact me about this project or my work at <clembytes@proton.me>.
 ## 🗺️ Roadmap
 
 Here is what I plan to do in the future on this project:
-- Add tests
-- Work on CI/CD
 - Add possibility to write a small list of instructions to follow
 - Add walls, maybe some pathfindind?
 
