@@ -439,11 +439,10 @@ if __name__ == '__main__':
         print("--- SERVER OPENED! ---")
 
     # wait for server to start
-    time.sleep(1)
+    time.sleep(3)
 
     try:
         # launch tests
-        time.sleep(0.1) # Sometimes CSS request fail if we don't do that
         flag = main()
     except:
         print("\n------------------------------------------------------------------")
