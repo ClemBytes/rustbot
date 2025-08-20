@@ -30,6 +30,13 @@ struct MaxGridSizes {
     change_max_j: u32,
 }
 
+/// Template context for the root page.
+///
+/// Passed to Askama to render `template_root.html`.
+#[derive(Template)]
+#[template(path = "template_root.html")]
+struct RootTemplate {}
+
 /// Template context for the play mode page.
 ///
 /// Passed to Askama to render `template_play.html`.
@@ -88,6 +95,7 @@ async fn main() {
         // Root: main page
         .route("/", get(root))
         // Play mode:
+        .route("/play", get(play))
         .route("/reset", get(reset).post(reset))
         .route("/right", get(right).post(right))
         .route("/left", get(left).post(left))
@@ -252,7 +260,25 @@ fn update_cookie(
 /// # Returns
 ///
 /// An `Html<String>` response containing the rendered template, implementing `IntoResponse`.
-async fn root(mut cookie: CookieManager) -> impl IntoResponse {
+async fn root() -> impl IntoResponse {
+    // Create html response
+    let html = RootTemplate {};
+    Html(html.render().unwrap())
+}
+
+/// Handler for the play path `/`.
+///
+/// Retrieves Rustbot's coordinates and the grid size from cookies, updates them if necessary,
+/// and renders the main HTML template.
+///
+/// # Arguments
+///
+/// * `cookie` - The `CookieManager` provided by Axum, used to read and update cookies.
+///
+/// # Returns
+///
+/// An `Html<String>` response containing the rendered template, implementing `IntoResponse`.
+async fn play(mut cookie: CookieManager) -> impl IntoResponse {
     // Retrieve cookies if already existing
     let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
     let (i_coord, j_coord) = get_rustbot_coordinates(&cookie);

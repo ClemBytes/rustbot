@@ -10,6 +10,46 @@ p, h1, h2, h3 {
   color: #eceff4;
 }
 
+/*--- Root menu page ---*/
+.menu {
+  display: flex;
+  width: 80%;
+  height: calc(100vh - 60px); /* full screen minus title */
+}
+
+.option {
+  flex: 1; /* each half is 50% */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.option:hover {
+  background: #f0f0f0;
+}
+
+.preview {
+  width: 80%;
+  height: 200px;
+  margin-top: 15px;
+  background: #ddd;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #333;
+}
+
+.left {
+  border-right: 2px solid #ccc;
+}
+
+/*--- Code page ---*/
+
 #double-columns {
   color: #eceff4;
   width: 50%;
@@ -36,6 +76,8 @@ p, h1, h2, h3 {
   color: #eceff4;
   text-align: left;
 }
+
+/*--- General ---*/
 
 h1 {
   font-size: 1.7rem;
