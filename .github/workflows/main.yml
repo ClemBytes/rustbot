@@ -16,5 +16,7 @@ jobs:
       run: cargo clippy
     - name: Install Python dependencies
       run: pip install -r python_requirements.txt
+    - name: List repo files
+      run: ls -R
     - name: tests
       run: python3 integration_test.py
