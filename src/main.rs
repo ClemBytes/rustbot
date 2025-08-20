@@ -30,12 +30,24 @@ struct MaxGridSizes {
     change_max_j: u32,
 }
 
-/// Template context for the main page.
+/// Template context for the play mode page.
 ///
-/// Passed to Askama to render `template.html`.
+/// Passed to Askama to render `template_play.html`.
 #[derive(Template)]
-#[template(path = "template.html")]
-struct MainTemplate {
+#[template(path = "template_play.html")]
+struct PlayTemplate {
+    rustbot_i: u32,
+    rustbot_j: u32,
+    grid_max_i: u32,
+    grid_max_j: u32,
+}
+
+/// Template context for the code mode page.
+///
+/// Passed to Askama to render `template_code.html`.
+#[derive(Template)]
+#[template(path = "template_code.html")]
+struct CodeTemplate {
     rustbot_i: u32,
     rustbot_j: u32,
     grid_max_i: u32,
@@ -73,7 +85,9 @@ struct MainTemplate {
 async fn main() {
     // Build app with different routes
     let app = Router::new()
+        // Root: main page
         .route("/", get(root))
+        // Play mode:
         .route("/reset", get(reset).post(reset))
         .route("/right", get(right).post(right))
         .route("/left", get(left).post(left))
@@ -81,6 +95,9 @@ async fn main() {
         .route("/up", get(up).post(up))
         .route("/coords/{i}/{j}", get(teleport).post(teleport))
         .route("/change-max", post(change_max))
+        // Code mode:
+        .route("/code", get(code))
+        // Static pages
         .nest_service("/static", ServeDir::new("static"))
         .layer(CookieLayer::default());
 
@@ -244,7 +261,7 @@ async fn root(mut cookie: CookieManager) -> impl IntoResponse {
     update_cookie(i_coord, j_coord, grid_max_i, grid_max_j, &mut cookie);
 
     // Create html response
-    let html = MainTemplate {
+    let html = PlayTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
         grid_max_i,
@@ -281,7 +298,7 @@ async fn reset(mut cookie: CookieManager) -> impl IntoResponse {
     update_cookie(i_coord, j_coord, grid_max_i, grid_max_j, &mut cookie);
 
     // Create html response
-    let html = MainTemplate {
+    let html = PlayTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
         grid_max_i,
@@ -323,7 +340,7 @@ async fn down(mut cookie: CookieManager) -> impl IntoResponse {
     update_cookie(i_coord, j_coord, grid_max_i, grid_max_j, &mut cookie);
 
     // Create html response
-    let html = MainTemplate {
+    let html = PlayTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
         grid_max_i,
@@ -365,7 +382,7 @@ async fn up(mut cookie: CookieManager) -> impl IntoResponse {
     update_cookie(i_coord, j_coord, grid_max_i, grid_max_j, &mut cookie);
 
     // Create html response
-    let html = MainTemplate {
+    let html = PlayTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
         grid_max_i,
@@ -407,7 +424,7 @@ async fn right(mut cookie: CookieManager) -> impl IntoResponse {
     update_cookie(i_coord, j_coord, grid_max_i, grid_max_j, &mut cookie);
 
     // Create html response
-    let html = MainTemplate {
+    let html = PlayTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
         grid_max_i,
@@ -449,7 +466,7 @@ async fn left(mut cookie: CookieManager) -> impl IntoResponse {
     update_cookie(i_coord, j_coord, grid_max_i, grid_max_j, &mut cookie);
 
     // Create html response
-    let html = MainTemplate {
+    let html = PlayTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
         grid_max_i,
@@ -491,7 +508,7 @@ async fn teleport(
     update_cookie(i_coord, j_coord, grid_max_i, grid_max_j, &mut cookie);
 
     // Create html response
-    let html = MainTemplate {
+    let html = PlayTemplate {
         rustbot_i: i_coord,
         rustbot_j: j_coord,
         grid_max_i,
@@ -530,7 +547,7 @@ async fn change_max(
     update_cookie(0, 0, grid_max_i, grid_max_j, &mut cookie);
 
     // Create html response
-    let html = MainTemplate {
+    let html = PlayTemplate {
         rustbot_i: 0,
         rustbot_j: 0,
         grid_max_i,
@@ -538,3 +555,22 @@ async fn change_max(
     };
     Html(html.render().unwrap())
 }
+
+async fn code(mut cookie: CookieManager) -> impl IntoResponse {
+    // Retrieve cookies if already existing
+    let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
+    let (i_coord, j_coord) = get_rustbot_coordinates(&cookie);
+
+    // Add cookies
+    update_cookie(i_coord, j_coord, grid_max_i, grid_max_j, &mut cookie);
+
+    // Create html response
+    let html = CodeTemplate {
+        rustbot_i: i_coord,
+        rustbot_j: j_coord,
+        grid_max_i,
+        grid_max_j,
+    };
+    Html(html.render().unwrap())
+}
+

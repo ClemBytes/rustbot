@@ -6,8 +6,39 @@ body {
   font-family: 'Noto Sans Mono', monospace;
 }
 
-p, h1, h2 {
+p, h1, h2, h3 {
   color: #eceff4;
+}
+
+#double-columns {
+  color: #eceff4;
+  width: 50%;
+  border-spacing: 30px;
+}
+
+#code {
+  width: 100%;
+  height: 300px;
+  padding: 10px; /*internal margin*/
+  font-size: 16px;
+  color: #eceff4;
+  border: 2px solid #eceff4;
+  border-radius: 8px;
+  resize: vertical;
+  background-color: #4c566a;
+}
+
+#info, ul {
+  width: 100%;
+  height: 300px;
+  padding: 10px; /*internal margin*/
+  font-size: 16px;
+  color: #eceff4;
+  border: 2px solid #eceff4;
+  border-radius: 8px;
+  resize: vertical;
+  background-color: #3b4252;
+  text-align: left;
 }
 
 h1 {

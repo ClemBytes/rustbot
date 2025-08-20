@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Just a rustbot 🦀</title>
+    <link rel="icon" href="/static/favicon-16x16.png">
+    <link rel="stylesheet" href="/static/template.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>Welcome to my robot page!</h1>
+    <table id="double-columns">
+        <tbody>
+            <tr>
+                <td>
+                    <form action="/user-code" method="post">
+                        <textarea name="user_code" id="code"></textarea>
+                    </form>
+                </td id="info">
+                <td>
+                    <ul>
+                        <h3 style="text-align: center;">Commands:</h3>
+                        <li>Move</li>
+                        <li>Loops</li>
+                        <li>Grid size</li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table id="robot-grid">
+        <tbody>
+        {%- for x in 0..grid_max_i %}
+            <tr>
+            {%- for y in 0..grid_max_j %}
+                {%- if x == rustbot_i && y == rustbot_j %}
+                <td data-x='{{ x }}' data-y='{{ y }}'><img src='/static/robot.png' alt='Robot' class='image-responsive'></td>
+                {%- else %}
+                <td data-x='{{ x }}' data-y='{{ y }}'></td>
+                {%- endif %}
+            {%- endfor %}
+            </tr>
+        {%- endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>
