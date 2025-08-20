@@ -428,6 +428,20 @@ def main():
 
     return flag1 and flag2 and flag3 and flag4
 
+def wait_for_server(timeout=15):
+    start = time.time()
+    while time.time() - start < timeout:
+        try:
+            r = requests.get(local_address)
+            if r.status_code < 500:
+                print("✅ server ready")
+                return True
+        except requests.exceptions.ConnectionError:
+            pass
+        time.sleep(0.5)
+    raise RuntimeError("❌ server not ready after 15s")
+
+
 if __name__ == '__main__':
     # open server
     with open("server.log", "w") as server_log_file:
@@ -439,7 +453,7 @@ if __name__ == '__main__':
         print("--- SERVER OPENED! ---")
 
     # wait for server to start
-    time.sleep(3)
+    wait_for_server()
 
     try:
         # launch tests
