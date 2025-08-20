@@ -126,9 +126,9 @@ function generateGrid(x_coord, y_coord, max_x, max_y) {
         grid += "<tr>";
         for (let y = 0; y < max_y; y++) {
             if (x == x_coord && y == y_coord) {
-                grid += `<td data-x='${x}' data-y='${y}'><img src='/static/robot.png' alt='Robot' class='image-responsive'></td>`;
+                grid += `<td class="grid-cell" data-x='${x}' data-y='${y}'><img src='/static/robot.png' alt='Robot' class='image-responsive'></td>`;
             } else {
-                grid += `<td data-x='${x}' data-y='${y}'></td>`;
+                grid += `<td class="grid-cell" data-x='${x}' data-y='${y}'></td>`;
             }
         }
         grid += "</tr>";
