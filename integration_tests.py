@@ -353,9 +353,10 @@ def main():
     print("------------------------------------------------------------------")
     print("TEST 4 : change grid size")
     print("-------------------------")
+    flag4 = True
     # Normal change
     new_max_i = 3
-    new_max_j = 3
+    new_max_j = 8
     r_change_grid = requests.post(
         local_address + 'change-max',
         data={
@@ -379,10 +380,47 @@ def main():
     if flag4:
         print("> Change size for inbounds values OK!")
     
-    # TODO: Absurd cookies (> 20, or letters instead of numbers)
+    # Check if big values changed back to 20
+    new_max_i = 99
+    new_max_j = 5
+    session = requests.Session()
+    r = session.post(
+        local_address + 'change-max',
+        data={
+            "change_max_i": new_max_i,
+            "change_max_j": new_max_j
+        }
+    )
+    r = session.get(local_address + 'right')
+    new_grid = find_robot_grid(r)
+    if len(new_grid) != 20:
+        print(f"Max_i (> 20) should be forced back to 20 and not {len(new_grid)}!")
+        flag4 = False
+    
+    if flag4:
+        print("> Values > 20 set back to 20 OK!")
+    
+    # Check string instead of 
+    new_max_i = 'Misty'
+    new_max_j = 5
+    session = requests.Session()
+    r = session.post(
+        local_address + 'change-max',
+        data={
+            "change_max_i": new_max_i,
+            "change_max_j": new_max_j
+        }
+    )
+    r = session.get(local_address + 'right')
+    new_grid = find_robot_grid(r)
+    if len(new_grid) != 5:
+        print(f"Max_i (not a number) should be forced back to 5 and not {len(new_grid)}!")
+        flag4 = False
+    
+    if flag4:
+        print("> Absurd values set back to 5 OK!")
+    
 
-
-    flag4 = True
     if flag4:
         print("OK!")
     print("------------------------------------------------------------------")
