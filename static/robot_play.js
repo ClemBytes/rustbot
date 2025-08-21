@@ -9,29 +9,31 @@
  * @param {KeyboardEvent} event - The keydown event.
  */
 async function onKeyDown(event) {
-    try {
-        if (event.key == "ArrowRight") {
-            event.preventDefault();
-            await fetch("/right", { method: "POST" });
-        } else if (event.key == "ArrowLeft") {
-            event.preventDefault();
-            await fetch("/left", { method: "POST" });
-        } else if (event.key == "ArrowUp") {
-            event.preventDefault();
-            await fetch("/up", { method: "POST" });
-        } else if (event.key == "ArrowDown") {
-            event.preventDefault();
-            await fetch("/down", { method: "POST" });
-        } else if (event.key == "Backspace") {
-            event.preventDefault();
-            await fetch("/reset", { method: "POST" });
-        } else {
-            console.log(event);
-            return;
+    if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+        try {
+            if (event.key == "ArrowRight") {
+                event.preventDefault();
+                await fetch("/right", { method: "POST" });
+            } else if (event.key == "ArrowLeft") {
+                event.preventDefault();
+                await fetch("/left", { method: "POST" });
+            } else if (event.key == "ArrowUp") {
+                event.preventDefault();
+                await fetch("/up", { method: "POST" });
+            } else if (event.key == "ArrowDown") {
+                event.preventDefault();
+                await fetch("/down", { method: "POST" });
+            } else if (event.key == "Backspace") {
+                event.preventDefault();
+                await fetch("/reset", { method: "POST" });
+            } else {
+                console.log(event);
+                return;
+            }
+            replaceGrid();
+        } catch {
+            alert("Could not reach server!");
         }
-        replaceGrid();
-    } catch {
-        alert("Could not reach server!");
     }
 }
 document.addEventListener("keydown", onKeyDown);
