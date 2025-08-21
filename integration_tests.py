@@ -189,6 +189,7 @@ def main():
     # CSS template
     flag11 = True
     r_css = requests.get(local_address + 'static/template.css')
+    r_css.encoding = 'utf-8'
 
     with open("static/template.css") as f:
         expected_css = f.read()
@@ -207,9 +208,9 @@ def main():
         flag11 = False
 
     cl = int(r_css.headers["Content-Length"])
-    lecss = len(expected_css)
+    lecss = len(expected_css.encode())
     if cl != lecss:
-        print(f"AAA Wrong Content-Length: {cl} (received) != {lecss} (expected)")
+        print(f"Wrong Content-Length: {cl} (received) != {lecss} (expected)")
         flag11 = False
 
     if flag11:
@@ -458,6 +459,8 @@ if __name__ == '__main__':
     try:
         # launch tests
         flag = main()
+        if not flag:
+            print("ERRORS!")
     except:
         print("\n------------------------------------------------------------------")
         print("EXCEPTION RAISED!\nServer logs:")
