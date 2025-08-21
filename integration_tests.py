@@ -190,7 +190,7 @@ def main():
     flag11 = True
     r_css = requests.get(local_address + 'static/template.css')
 
-    with open("static/template.css", "r") as f:
+    with open("static/template.css") as f:
         expected_css = f.read()
     
     if r_css.status_code != requests.codes.ok:
@@ -209,7 +209,7 @@ def main():
     cl = int(r_css.headers["Content-Length"])
     lecss = len(expected_css)
     if cl != lecss:
-        print(f"Wrong Content-Length: {cl} (received) != {lecss} (expected)")
+        print(f"AAA Wrong Content-Length: {cl} (received) != {lecss} (expected)")
         flag11 = False
 
     if flag11:

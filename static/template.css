@@ -146,7 +146,7 @@ td {
   font-size: 0.8rem;
   text-align: center;
   font-weight: bold;
-  height: 20px; /* maintenant c’est pris correctement */
+  height: 20px;
 }
 
 /* Lines' headers */
@@ -157,7 +157,7 @@ td {
   text-align: center;
   font-weight: bold;
   width: 20px;
-  height: 20px; /* rajoute si tu veux */
+  height: 20px;
 }
 
 /* Corner */
