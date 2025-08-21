@@ -30,6 +30,11 @@ struct MaxGridSizes {
     change_max_j: u32,
 }
 
+#[derive(Deserialize)]
+struct UserCode {
+    user_code: String,
+}
+
 /// Template context for the root page.
 ///
 /// Passed to Askama to render `template_root.html`.
@@ -105,6 +110,7 @@ async fn main() {
         .route("/change-max", post(change_max))
         // Code mode:
         .route("/code", get(code))
+        .route("/user-code", post(user_code))
         // Static pages
         .nest_service("/static", ServeDir::new("static"))
         .layer(CookieLayer::default());
@@ -600,3 +606,61 @@ async fn code(mut cookie: CookieManager) -> impl IntoResponse {
     Html(html.render().unwrap())
 }
 
+async fn user_code(
+    mut cookie: CookieManager,
+    Form(user_code): Form<UserCode>,
+) -> impl IntoResponse {
+    let user_code = user_code.user_code;
+
+    // Retrieve cookies if already existing
+    let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
+    let (mut i_coord, mut j_coord) = get_rustbot_coordinates(&cookie);
+
+    for line in user_code.lines() {
+        match line.trim() {
+            "right" => {
+                if j_coord == grid_max_j - 1 {
+                    j_coord = 0;
+                } else {
+                    j_coord += 1;
+                }
+            },
+            "left" => {
+                if j_coord == 0 {
+                    j_coord = grid_max_j - 1;
+                } else {
+                    j_coord -= 1;
+                }
+            },
+            "down" => {
+                if i_coord == grid_max_i - 1 {
+                    i_coord = 0;
+                } else {
+                    i_coord += 1;
+                }
+            },
+            "up" => {
+                if i_coord == 0 {
+                    i_coord = grid_max_i - 1;
+                } else {
+                    i_coord -= 1;
+                }
+            },
+            other => panic!("Unknwon command: {other}"),
+        }
+    }
+
+    // Add cookies
+    update_cookie(i_coord, j_coord, grid_max_i, grid_max_j, &mut cookie);
+
+    // Create html response
+    let html = CodeTemplate {
+        rustbot_i: i_coord,
+        rustbot_j: j_coord,
+        grid_max_i,
+        grid_max_j,
+    };
+
+    
+    Html(html.render().unwrap())
+}

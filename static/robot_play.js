@@ -1,6 +1,6 @@
 /**
- * @file robot.js
- * @brief Script for interacting with the robot grid.
+ * @file robot_play.js
+ * @brief Script for interacting with the robot grid in play mode.
  */
 
 /**

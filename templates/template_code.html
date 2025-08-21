@@ -12,18 +12,21 @@
         <tbody>
             <tr>
                 <td>
-                    <form action="/user-code" method="post">
-                        <textarea name="user_code" id="code"></textarea>
+                    <form id="user-code" action="/user-code" method="post">
+                        <textarea for="user_code" name="user_code" id="code"></textarea>
 
-                        <button id="button-form" type="submit">Send</button>
+                        <button id="button-form-code" type="submit">Send</button>
                     </form>
                 </td id="info">
                 <td>
                     <ul>
                         <h3 style="text-align: center;">Commands:</h3>
-                        <li>Move</li>
-                        <li>Loops</li>
-                        <li>Grid size</li>
+                        <li>'right'</li>
+                        <li>'left'</li>
+                        <li>'up'</li>
+                        <li>'down'</li>
+                        <li>TODO Loops</li>
+                        <li>TODO Grid size</li>
                     </ul>
                 </td>
             </tr>
@@ -56,5 +59,6 @@
         </tbody>
     </table>
 
+    <script src="/static/robot_play.js"></script>
 </body>
 </html>
