@@ -27,8 +27,13 @@ async function onClick(event) {
             return;
         }
         replaceGrid();
-    } catch {
-        alert("Could not reach server!");
+    } catch (e) {
+        if (e instanceof TypeError && e.message == "NetworkError when attempting to fetch resource.") {
+            console.log(e);
+            alert("Could not reach server!");
+        } else {
+            console.log(e);
+        }
     }
 }
 
@@ -39,7 +44,6 @@ button_form.addEventListener("click", onClick);
  * @brief Reads cookies of document.
  */
 function readCookies() {
-    console.log(document.cookie);
     const cookies_array = document.cookie.split("; ");
     const x = cookies_array.find((row) => row.startsWith("i=")).split("=")[1];
     const y = cookies_array.find((row) => row.startsWith("j=")).split("=")[1];
@@ -73,20 +77,9 @@ function generateGrid(x_coord, y_coord, max_x, max_y) {
 }
 
 /**
- * @brief Updates coordinates written on top of page.
- * 
- * @param {int} x_coord Robot's x coordinate.
- * @param {int} y_coord Robot's y coordinate.
- */
-function updateCoords(x_coord, y_coord) {
-    document.getElementById("coords").outerHTML = `<p id="coords">Current coordinates: (${x_coord}, ${y_coord})</p>`;
-}
-
-/**
  * @brief Replace grid by newly generated one (with new robot's coordinates).
  */
 function replaceGrid() {
     const [x_coord, y_coord, max_x, max_y] = readCookies();
     generateGrid(x_coord, y_coord, max_x, max_y);
-    updateCoords(x_coord, y_coord);
 }
