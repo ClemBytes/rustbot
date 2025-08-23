@@ -6,6 +6,7 @@ use axum::{
     routing::{get, post},
 };
 use axum_cookie::prelude::*;
+use regex::Regex;
 use serde::Deserialize;
 use tower_http::services::ServeDir;
 
@@ -641,6 +642,11 @@ async fn user_code(
             } else {
                 i_coord -= 1;
             }
+        } else if line.contains("go to") {
+            let re = Regex::new(r"go to \(([0-9]+) ?; ?([0-9]+)\)").unwrap();
+            let matches = re.captures(line).unwrap();
+            i_coord = matches[1].parse().unwrap();
+            j_coord = matches[2].parse().unwrap();
         } else {
             panic!("Unknwon command: {line}");
         }

@@ -17,7 +17,7 @@
 
                         <button id="button-form-code" type="submit">Send</button>
                     </form>
-                </td id="info">
+                </td>
                 <td>
                     <ul>
                         <h3 style="text-align: center;">Commands:</h3>
@@ -25,6 +25,7 @@
                         <li>'left'</li>
                         <li>'up'</li>
                         <li>'down'</li>
+                        <li>'go to (i, j)'</li>
                         <li>TODO Loops</li>
                         <li>TODO Grid size</li>
                     </ul>
@@ -35,17 +36,17 @@
 
     <table id="robot-grid">
         <tbody>
-        <!-- Header row (columns) -->
-        <tr>
-            <td class="corner"></td>
-            {%- for y in 0..grid_max_j %}
+            <!-- Header row (columns) -->
+            <tr>
+                <td class="corner"></td>
+                {%- for y in 0..grid_max_j %}
                 <td class="header">{{ y }}</td>
-            {%- endfor %}
-        </tr>
+                {%- endfor %}
+            </tr>
 
         {%- for x in 0..grid_max_i %}
             <tr>
-            <td class="header-column">{{ x }}</td> <!-- Line number -->
+                <td class="header-column">{{ x }}</td> <!-- Line number -->
 
             {%- for y in 0..grid_max_j %}
                 {%- if x == rustbot_i && y == rustbot_j %}
