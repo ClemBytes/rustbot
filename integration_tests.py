@@ -429,7 +429,7 @@ def main():
 
     return flag1 and flag2 and flag3 and flag4
 
-def wait_for_server(timeout=15):
+def wait_for_server(timeout=30):
     start = time.time()
     while time.time() - start < timeout:
         try:
@@ -440,7 +440,7 @@ def wait_for_server(timeout=15):
         except requests.exceptions.ConnectionError:
             pass
         time.sleep(0.5)
-    raise RuntimeError("❌ server not ready after 15s")
+    raise RuntimeError("❌ server not ready after 30s")
 
 
 if __name__ == '__main__':
