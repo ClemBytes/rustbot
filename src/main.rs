@@ -126,7 +126,7 @@ async fn main() {
 /// This function checks the cookies `"max-i"` and `"max-j"` to determine
 /// the number of rows (`i`) and columns (`j`) of the grid. If the cookies
 /// are not present, it returns default values (`DEFAULT_MAX_I` and `DEFAULT_MAX_J`).
-/// 
+///
 /// If parse fails (for exemple if user changes cookies for absurd values), returns
 /// default values. Also forbids to have values set bigger than MAX_MAX_I/J.
 ///
@@ -157,7 +157,7 @@ fn get_grid_size(cookie: &CookieManager) -> (u32, u32) {
                 } else {
                     grid_max_i = cookie_max_i;
                 }
-            },
+            }
             Err(_) => grid_max_i = DEFAULT_MAX_I,
         }
     }
@@ -169,7 +169,7 @@ fn get_grid_size(cookie: &CookieManager) -> (u32, u32) {
                 } else {
                     grid_max_j = cookie_max_j;
                 }
-            },
+            }
             Err(_) => grid_max_j = DEFAULT_MAX_J,
         }
     }
@@ -179,7 +179,7 @@ fn get_grid_size(cookie: &CookieManager) -> (u32, u32) {
 /// Retrieves Rustbot's current coordinates from cookies.
 ///
 /// If the cookies `"i"` or `"j"` are not present, defaults to `(0, 0)`.
-/// 
+///
 /// If parse fails (for exemple if user changes cookies for absurd values), returns
 /// to 0. Also forbids to have values set bigger than grid size.
 ///
@@ -202,7 +202,7 @@ fn get_rustbot_coordinates(cookie: &CookieManager) -> (u32, u32) {
                 } else {
                     i_coord = cookie_i;
                 }
-            },
+            }
             Err(_) => i_coord = 0,
         }
     }
@@ -214,7 +214,7 @@ fn get_rustbot_coordinates(cookie: &CookieManager) -> (u32, u32) {
                 } else {
                     j_coord = cookie_j;
                 }
-            },
+            }
             Err(_) => j_coord = 0,
         }
     }
@@ -617,6 +617,11 @@ async fn user_code(
     let (mut grid_max_i, mut grid_max_j) = get_grid_size(&cookie);
     let (mut i_coord, mut j_coord) = get_rustbot_coordinates(&cookie);
 
+    // Define regexps:
+    let re_go_to = Regex::new(r"go to \(([0-9]+) ?[;|,] ?([0-9]+)\)").unwrap();
+    let re_nb_lines = Regex::new(r"nb lines = ([0-9]+)").unwrap();
+    let re_nb_columns = Regex::new(r"nb columns = ([0-9]+)").unwrap();
+
     for line in user_code.lines() {
         if line.contains("right") {
             if j_coord == grid_max_j - 1 {
@@ -643,17 +648,14 @@ async fn user_code(
                 i_coord -= 1;
             }
         } else if line.contains("go to") {
-            let re = Regex::new(r"go to \(([0-9]+) ?[;|,] ?([0-9]+)\)").unwrap();
-            let matches = re.captures(line).unwrap();
+            let matches = re_go_to.captures(line).unwrap();
             i_coord = matches[1].parse().unwrap();
             j_coord = matches[2].parse().unwrap();
         } else if line.contains("nb lines") {
-            let re = Regex::new(r"nb lines = ([0-9]+)").unwrap();
-            let matches = re.captures(line).unwrap();
+            let matches = re_nb_lines.captures(line).unwrap();
             grid_max_i = matches[1].parse().unwrap();
         } else if line.contains("nb columns") {
-            let re = Regex::new(r"nb columns = ([0-9]+)").unwrap();
-            let matches = re.captures(line).unwrap();
+            let matches = re_nb_columns.captures(line).unwrap();
             grid_max_j = matches[1].parse().unwrap();
         } else {
             panic!("Unknwon command: {line}");
@@ -671,6 +673,5 @@ async fn user_code(
         grid_max_j,
     };
 
-    
     Html(html.render().unwrap())
 }
