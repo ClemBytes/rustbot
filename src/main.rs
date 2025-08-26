@@ -618,9 +618,9 @@ async fn user_code(
     let (mut i_coord, mut j_coord) = get_rustbot_coordinates(&cookie);
 
     // Define regexps:
-    let re_go_to = Regex::new(r"go to \(([0-9]+) ?[;|,] ?([0-9]+)\)").unwrap();
-    let re_nb_lines = Regex::new(r"nb lines = ([0-9]+)").unwrap();
-    let re_nb_columns = Regex::new(r"nb columns = ([0-9]+)").unwrap();
+    let re_go_to = Regex::new(r"go to \(([0-9]+)\s*[;,]\s*([0-9]+)\)").unwrap();
+    let re_nb_lines = Regex::new(r"nb lines\s*=\s*([0-9]+)").unwrap();
+    let re_nb_columns = Regex::new(r"nb columns\s*=\s*([0-9]+)").unwrap();
 
     for line in user_code.lines() {
         if line.contains("right") {
