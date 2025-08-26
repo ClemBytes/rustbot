@@ -24,8 +24,7 @@ async function onClick(event) {
             )
             const body = await response.text();
             const re = /<table id="robot-grid">.+<\/table>/s;
-            const grid = re.test(body);
-            console.log(grid);
+            const grid = body.match(re);
             document.getElementById("robot-grid").innerHTML = grid;
         } else {
             console.log(event);
