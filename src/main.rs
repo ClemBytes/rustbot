@@ -614,7 +614,7 @@ async fn user_code(
     let user_code = user_code.user_code;
 
     // Retrieve cookies if already existing
-    let (grid_max_i, grid_max_j) = get_grid_size(&cookie);
+    let (mut grid_max_i, mut grid_max_j) = get_grid_size(&cookie);
     let (mut i_coord, mut j_coord) = get_rustbot_coordinates(&cookie);
 
     for line in user_code.lines() {
@@ -643,10 +643,18 @@ async fn user_code(
                 i_coord -= 1;
             }
         } else if line.contains("go to") {
-            let re = Regex::new(r"go to \(([0-9]+) ?; ?([0-9]+)\)").unwrap();
+            let re = Regex::new(r"go to \(([0-9]+) ?[;|,] ?([0-9]+)\)").unwrap();
             let matches = re.captures(line).unwrap();
             i_coord = matches[1].parse().unwrap();
             j_coord = matches[2].parse().unwrap();
+        } else if line.contains("nb lines") {
+            let re = Regex::new(r"nb lines = ([0-9]+)").unwrap();
+            let matches = re.captures(line).unwrap();
+            grid_max_i = matches[1].parse().unwrap();
+        } else if line.contains("nb columns") {
+            let re = Regex::new(r"nb columns = ([0-9]+)").unwrap();
+            let matches = re.captures(line).unwrap();
+            grid_max_j = matches[1].parse().unwrap();
         } else {
             panic!("Unknwon command: {line}");
         }

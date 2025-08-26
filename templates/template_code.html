@@ -11,23 +11,26 @@
     <table id="double-columns">
         <tbody>
             <tr>
-                <td>
+                <td id="col1">
                     <form id="user-code" action="/user-code" method="post">
                         <textarea for="user_code" name="user_code" id="code"></textarea>
 
                         <button id="button-form-code" type="submit">Send</button>
                     </form>
+
+                    
                 </td>
-                <td>
-                    <ul>
-                        <h3 style="text-align: center;">Commands:</h3>
-                        <li>'right'</li>
-                        <li>'left'</li>
-                        <li>'up'</li>
-                        <li>'down'</li>
-                        <li>'go to (i, j)'</li>
-                        <li>TODO Loops</li>
-                        <li>TODO Grid size</li>
+                <td id="col2">
+                    <ul class="command-list">
+                        <h3>Available commands:</h3>
+                        <li>right</code></li>
+                        <li>left</li>
+                        <li>up</li>
+                        <li>down</li>
+                        <li>go to (<code>i</code>, <code>j</code>)</li>
+                        <li>nb lines = <code>max_i</li>
+                        <li>nb columns = <code>max_j</li>
+                        <li><em>TODO: Loops</em></li>
                     </ul>
                 </td>
             </tr>
